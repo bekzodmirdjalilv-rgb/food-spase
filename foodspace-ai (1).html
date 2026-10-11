@@ -1,0 +1,1490 @@
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Food Space AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: clean white canvas, one yellow accent, soft rounded surfaces. Sticky slim header, single column (max 1080px, card grid 2 to 5 columns), floating nav, recipe screen with overlapping content sheet. */
+:root{
+  --bg:#FFFFFF; --card:#FFFFFF; --soft:#F5F3EE; --fg:#1F1B16; --muted:#6F675C;
+  --line:rgba(31,27,22,.09); --line2:rgba(31,27,22,.24);
+  --accent:#FFC21A; --accent-fg:#2B2005; --nav:rgba(255,255,255,.94);
+  --tl:91%; --shadow:0 10px 28px rgba(31,27,22,.09); --ok:#2F8A3B;
+  --font:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+:root[data-skin="warm"]{
+  --bg:#2A1D1D; --card:#3B2A2A; --soft:#4A3636; --fg:#FDFBF7; --muted:#D0C0B7;
+  --line:rgba(253,251,247,.12); --line2:rgba(253,251,247,.3);
+  --nav:rgba(42,29,29,.92); --tl:27%; --shadow:0 12px 30px rgba(0,0,0,.35); color-scheme:dark;
+}
+:root[data-skin="black"]{
+  --bg:#0B0B0B; --card:#171717; --soft:#232323; --fg:#FDFBF7; --muted:#BDB5B0;
+  --line:rgba(253,251,247,.14); --line2:rgba(253,251,247,.3);
+  --nav:rgba(11,11,11,.92); --tl:22%; --shadow:0 12px 30px rgba(0,0,0,.6); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:clip}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.5;padding-inline:20px;padding-block:0 124px;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--fg);outline-offset:2px;border-radius:12px}
+h1,h2,h3{margin:0;font-weight:800;text-wrap:balance;line-height:1.18;letter-spacing:-.01em}
+.wrap{max-width:1360px;margin-inline:auto}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.f{fill:currentColor;stroke:none}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:12px;margin-inline:-20px;padding-inline:20px}
+.top .wrap{display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.logo-mark{width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}
+.logo b{font-size:19px;font-weight:800;white-space:nowrap}
+.ibtn{min-width:48px;height:48px;border-radius:16px;background:var(--soft);display:grid;place-items:center;padding-inline:12px;font-weight:800;font-size:14px;letter-spacing:.05em}
+.ibtn:hover{background:var(--accent);color:var(--accent-fg)}
+
+/* typography blocks */
+main{padding-top:12px}
+.sec{display:flex;flex-direction:column;gap:22px}
+.title{font-size:30px;font-weight:800}
+.h1{font-size:34px;line-height:1.12}
+.hl{background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 92%,transparent 92%)}
+.sub{color:var(--muted);margin:6px 0 0}
+.eyebrow{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.count{color:var(--muted);font-weight:600;font-size:15px}
+.head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+
+/* Jesika */
+.jes{display:flex;flex-direction:column;gap:14px}
+.jes-h{display:flex;gap:12px;align-items:center}
+.jes-av{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;flex:none}
+.jes-h b{display:block;font-size:18px;line-height:1.2}
+.jes-h span{color:var(--muted);font-size:14px}
+.bubble{background:var(--soft);border-radius:22px;padding:16px 18px;line-height:1.55}
+.bubble .chips{margin-top:12px}
+.bubble p{margin:12px 0 0}
+.ask{display:flex;gap:10px}
+.ask input{flex:1;min-width:0;height:58px;border-radius:20px;border:0;background:var(--soft);padding-inline:20px;outline-offset:2px}
+.ask input::placeholder{color:var(--muted)}
+.btn{background:var(--accent);color:var(--accent-fg);font-weight:800;border-radius:20px;height:58px;padding-inline:26px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-size:17px}
+.btn.sq{width:58px;padding:0;flex:none}
+.btn.ghost{background:var(--soft);color:var(--fg)}
+.btn.line{background:transparent;border:1.5px solid var(--line2);color:var(--fg)}
+.btn.block{width:100%}
+.btn:active{transform:scale(.98)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--bg);border:1.5px solid var(--line);border-radius:16px;padding:9px 14px;font-weight:700;font-size:15px;min-height:44px;display:inline-flex;align-items:center}
+.chip:hover{border-color:var(--fg)}
+.chip.s{background:var(--soft);border-color:transparent}
+
+/* category pills */
+.pills{display:flex;gap:10px;overflow-x:auto;padding:2px 20px 6px;margin-inline:-20px;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:none;height:52px;padding-inline:22px;border-radius:26px;background:var(--soft);font-weight:700}
+.pill[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+
+/* dish tiles (abstract top-down plates) */
+.tile{aspect-ratio:4/3;max-width:100%;background:hsl(var(--h) 62% var(--tl));position:relative;overflow:hidden}
+.tile svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rate{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;background:var(--accent);color:var(--accent-fg);font-weight:800;font-size:13px;border-radius:12px;padding:4px 9px 4px 7px}
+.rate svg.i{width:13px;height:13px;fill:currentColor;stroke:none}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}}
+@media(min-width:900px){.title{font-size:34px}}
+.rc{display:flex;flex-direction:column;background:var(--card);border-radius:24px;overflow:hidden;text-align:left;min-width:0;box-shadow:var(--shadow);border:1px solid var(--line)}
+.rc .tile{border-radius:0}
+.rc-b{padding:12px 14px 15px;display:flex;flex-direction:column;gap:6px}
+.rc-b h3{font-size:16px;font-weight:700;line-height:1.28;letter-spacing:0}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted);font-weight:600}
+.meta b{color:var(--fg);font-weight:700}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--line2)}
+.empty{padding:34px 16px;text-align:center;color:var(--muted);background:var(--soft);border-radius:24px}
+
+/* fridge */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.prod{background:var(--soft);border:2px solid transparent;border-radius:20px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px}
+.prod.on{border-color:var(--accent);background:var(--card)}
+.prod .pt{min-height:44px;width:100%;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.prod .chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--line2);flex:none;display:grid;place-items:center}
+.prod.on .chk{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.prod .chk svg{width:12px;height:12px;stroke-width:3}
+.qty{display:flex;align-items:center;gap:8px;padding-bottom:4px}
+.qty button{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-size:22px;font-weight:800;line-height:1}
+.qty span{min-width:36px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.match{display:flex;flex-direction:column;gap:6px;padding-inline:4px}
+.bar{height:8px;border-radius:4px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.miss{font-size:13px;color:var(--muted)}
+
+/* search */
+.sbox{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:22px;padding-inline:20px;height:64px;color:var(--muted)}
+.sbox:focus-within{outline:3px solid var(--fg);outline-offset:2px}
+.sbox input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:18px;height:100%;color:var(--fg)}
+.sbox input::placeholder{color:var(--muted)}
+
+/* diary */
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.day{border-radius:20px;background:var(--soft);padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:700;min-height:72px;justify-content:center}
+.day small{color:var(--muted);font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.day[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.day[aria-pressed="true"] small{color:var(--accent-fg)}
+.panel{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:28px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big b{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.mac{display:flex;flex-direction:column;gap:7px}
+.mac-h{display:flex;justify-content:space-between;font-weight:700;font-variant-numeric:tabular-nums}
+.mac-h span:last-child{color:var(--muted);font-weight:600}
+.mac .bar{height:12px;border-radius:6px}
+.meal{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.meal:first-child{border-top:0}
+.mt{width:56px;height:56px;border-radius:16px;overflow:hidden;flex:none}
+.mt.tile{aspect-ratio:1}
+.meal div.tx{flex:1;min-width:0}
+.meal b{display:block;font-size:16px;line-height:1.3}
+.meal span{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.x{width:44px;height:44px;border-radius:50%;color:var(--muted);display:grid;place-items:center;flex:none}
+.x:hover{background:var(--soft)}
+.note{font-size:13px;color:var(--muted)}
+
+/* profile */
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.row:first-child{border-top:0;padding-top:0}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{background:var(--soft);border-radius:16px;padding:10px 18px;font-weight:700;min-height:48px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat div{background:var(--soft);border-radius:22px;padding:16px 8px;text-align:center}
+.stat b{display:block;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted);font-weight:600}
+
+/* bottom nav */
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:30;width:min(430px,calc(100% - 16px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--nav);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:30px;padding:6px;box-shadow:var(--shadow)}
+.nav button{min-width:0;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:10.5px;font-weight:700;border-radius:24px;position:relative}
+.nav button svg.i{width:26px;height:26px}
+.nav button[aria-current="page"]{color:var(--fg)}
+.nav button[aria-current="page"]::after{content:"";position:absolute;bottom:3px;width:18px;height:4px;border-radius:2px;background:var(--accent)}
+
+/* recipe screen */
+.sheet{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto}
+.sheet[hidden]{display:none}
+.dwrap{max-width:720px;margin-inline:auto;position:relative}
+.sheet-bar{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;height:calc(76px + env(safe-area-inset-top,0px));margin-bottom:calc(-76px - env(safe-area-inset-top,0px));pointer-events:none}
+.rbtn{pointer-events:auto;width:52px;height:52px;border-radius:18px;background:var(--bg);color:var(--fg);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.rbtn.y{background:var(--accent);color:var(--accent-fg)}
+.rbtn.on svg{fill:currentColor}
+.hero{aspect-ratio:auto;height:300px}
+.hero svg{object-fit:cover}
+.body{position:relative;margin-top:-30px;background:var(--bg);border-radius:32px 32px 0 0;padding:28px 20px 48px;display:flex;flex-direction:column;gap:22px}
+.tr{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.tr h1{font-size:28px}
+.tr .rate{position:static;flex:none;font-size:15px;padding:6px 11px 6px 9px;margin-top:4px}
+.tr .rate svg.i{width:15px;height:15px}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.fact{aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.fact b{font-size:21px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.fact span{font-size:12px;color:var(--muted);font-weight:700}
+.dmac{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:center}
+.dmac div{border:1.5px solid var(--line);border-radius:18px;padding:12px 4px}
+.dmac b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+.dmac span{font-size:13px;color:var(--muted);font-weight:600}
+.ingbox{border:1.5px dashed var(--line2);border-radius:24px;padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 24px}
+.ii{display:flex;align-items:center;gap:12px;min-width:0}
+.ii i{width:10px;height:10px;border-radius:50%;background:var(--accent);flex:none}
+.ii span{min-width:0}
+.ii b{font-variant-numeric:tabular-nums;margin-right:4px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:14px;align-items:flex-start}
+.steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-weight:800;display:grid;place-items:center;flex:none;font-size:15px}
+.steps li p{margin:0;padding-top:3px}
+
+/* video modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}
+.modal[hidden]{display:none!important}
+.mbox{background:var(--bg);border-radius:30px;width:min(560px,100%);padding:18px;display:flex;flex-direction:column;gap:14px;max-height:100%;overflow-y:auto}
+.screen{aspect-ratio:16/10;border-radius:22px;position:relative;overflow:hidden}
+.screen p{position:absolute;inset:auto 0 0 0;margin:0;padding:28px 16px 14px;font-size:16px;font-weight:600;background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:112px;z-index:70;background:var(--fg);color:var(--bg);padding:13px 22px;border-radius:20px;font-weight:700;box-shadow:var(--shadow)}
+.toast[hidden]{display:none}
+a.btn,a.vposter{text-decoration:none}
+@media(prefers-reduced-motion:no-preference){.rc,.btn{transition:transform .15s}.rc:active{transform:scale(.985)}}
+
+/* ===== v2 additions ===== */
+.days{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{min-height:78px;border-radius:18px;padding:8px 0;position:relative}
+.day.today span{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.dd{width:6px;height:6px;border-radius:50%;background:transparent;margin-top:2px}
+.dd.on{background:var(--accent)}
+.day[aria-pressed="true"] .dd.on{background:var(--accent-fg)}
+.wk{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wk b{font-variant-numeric:tabular-nums}
+.rbtn.sm{width:44px;height:44px;border-radius:14px;box-shadow:none;background:var(--soft)}
+.btn.sm{height:48px;padding-inline:18px;font-size:15px;border-radius:16px;position:relative}
+.pip{position:absolute;top:8px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.bdg{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font-size:12px;font-style:normal;font-weight:800;display:grid;place-items:center;padding-inline:5px;border:2px solid var(--bg)}
+.ibtn{position:relative}
+.qty.sm{padding:0;gap:6px}.qty.sm button{width:40px;height:40px;font-size:20px}
+.qty.sm span{min-width:30px}
+
+/* landing hero + Jesika chat */
+.land{display:grid;gap:22px;background:#17140F;color:#fff;border-radius:34px;padding:26px 20px;align-items:center}
+.land .sub{color:rgba(255,255,255,.72)}
+.land .eyebrow{color:var(--accent)}
+.land .h1{font-size:clamp(30px,8vw,52px)}
+.land .btn.ghost{background:rgba(255,255,255,.12);color:#fff}
+.land-l{display:flex;flex-direction:column;gap:14px;min-width:0}
+.chatcard{background:var(--card);color:var(--fg);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.chatlog{display:flex;flex-direction:column;gap:10px;max-height:340px;min-height:120px;overflow-y:auto;overscroll-behavior:contain;padding-right:2px}
+.chatlog .bubble{padding:13px 15px;border-radius:20px;border-top-left-radius:6px;align-self:flex-start;max-width:94%;font-size:16px}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-fg);padding:11px 15px;border-radius:20px;border-top-right-radius:6px;font-weight:600;max-width:88%;overflow-wrap:anywhere}
+.aitxt{white-space:pre-wrap;overflow-wrap:anywhere}
+.aitxt .chips,.aitxt p{white-space:normal}
+.typing{display:inline-flex;gap:5px;padding:4px 2px}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:bl 1.1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}
+.chatcard .ask input{height:54px}.chatcard .btn.sq{width:54px;height:54px}
+@media(min-width:900px){.land{grid-template-columns:1.05fr 1fr;padding:40px;gap:40px}.chatlog{max-height:380px}}
+
+/* stories */
+.stories{display:flex;gap:16px;overflow-x:auto;padding:4px 20px 8px;margin-inline:-20px;scrollbar-width:none;justify-content:flex-start}
+.stories::-webkit-scrollbar{display:none}
+@media(min-width:760px){.stories{justify-content:center;margin-inline:0;padding-inline:0}}
+.story{flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;width:84px}
+.story b{font-size:14px;font-weight:700;text-align:center}
+.ring{display:block;width:80px;height:80px;border-radius:50%;padding:3px;background:var(--line2)}
+.story[aria-pressed="true"] .ring{background:conic-gradient(var(--accent),#FFE08A,var(--accent))}
+.ring .tile{width:100%;height:100%;aspect-ratio:1;border-radius:50%;border:3px solid var(--bg);display:block}
+
+/* fridge results */
+.mlist{display:flex;flex-direction:column;gap:12px}
+.mc{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px;box-shadow:var(--shadow)}
+.mo{width:78px;flex:none;border-radius:16px;overflow:hidden}
+.mo .tile{aspect-ratio:1}
+.mb{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mb b{line-height:1.25}
+
+/* recipe sheet additions */
+.rb2{display:flex;gap:10px}
+.cb{position:relative}
+.cb em{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font-size:12px;font-style:normal;font-weight:800;display:grid;place-items:center;padding-inline:5px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.photo{display:flex;gap:10px;flex-wrap:wrap}
+.body h2{font-size:22px}
+.body .head{align-items:center}
+.steps li{align-items:flex-start}
+.sx{display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0}
+.sx p{padding-top:4px;font-size:18px;line-height:1.55}
+.tchip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding-inline:14px;border-radius:16px;background:var(--soft);font-weight:800;font-variant-numeric:tabular-nums}
+.tchip svg.i{width:20px;height:20px}
+.tchip.run{background:var(--accent);color:var(--accent-fg)}
+.tchip.done{background:var(--ok);color:#fff}
+@media(min-width:900px){.dwrap{max-width:820px}}
+
+/* timer bar */
+.tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(94px + env(safe-area-inset-bottom,0px));z-index:55;display:flex;flex-direction:column;gap:8px;width:min(430px,calc(100% - 16px));pointer-events:none}
+.tbar:empty{display:none}
+.tp{pointer-events:auto;display:flex;align-items:center;gap:10px;background:var(--fg);color:var(--bg);border-radius:20px;padding:6px 6px 6px 16px;box-shadow:var(--shadow)}
+.tp b{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp span{font-weight:800;font-variant-numeric:tabular-nums}
+.tp.done{background:var(--ok);color:#fff}
+.tp button{width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
+
+/* embedded video */
+.dc{display:contents}
+.vposter{position:relative;display:block;width:100%;aspect-ratio:16/9;border-radius:24px;overflow:hidden;background:#000;padding:0}
+.vposter .tile{position:absolute;inset:0;aspect-ratio:auto}
+.vposter img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vposter .pb{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.vposter .pb svg.i{width:34px;height:34px;margin-left:4px}
+.vposter .vcap{position:absolute;left:12px;right:12px;bottom:12px;text-align:center;background:rgba(0,0,0,.6);color:#fff;border-radius:14px;padding:8px 12px;font-size:15px}
+.vwrap{aspect-ratio:16/9;border-radius:24px;overflow:hidden;background:#000}
+.vwrap iframe{width:100%;height:100%;border:0;display:block}
+.vnote{margin:-8px 0 0}.vnote a{color:var(--fg);text-underline-offset:3px}
+
+/* cooking mode */
+.cooking .tbar{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.cook{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto}
+.cook[hidden]{display:none}
+.cwrap{max-width:760px;min-height:100%;margin-inline:auto;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px))}
+.cbar{display:flex;align-items:center;gap:14px}
+.cbar .rbtn{box-shadow:none;background:var(--soft);flex:none}
+.ctitle{min-width:0;display:flex;flex-direction:column}
+.ctitle b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctitle span{color:var(--muted);font-weight:700;font-size:15px}
+.cprog{height:8px;background:var(--soft);border-radius:4px;margin:16px 0 8px;overflow:hidden}
+.cprog i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.cbody{flex:1;display:flex;flex-direction:column;gap:20px;align-items:flex-start;padding-block:16px}
+.cstep{margin:0;font-size:clamp(24px,6.4vw,34px);line-height:1.34;font-weight:700;text-wrap:pretty}
+.ctm{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ctm span{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums}
+.ctm.done span{color:var(--ok)}
+.cing{width:100%}
+.cnav{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;position:sticky;bottom:0;padding-top:10px;background:linear-gradient(transparent,var(--bg) 30%)}
+.cnav .btn{height:64px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.cdone{display:flex;flex-direction:column;gap:14px;padding-top:24px}
+.cdone .tile{border-radius:28px;aspect-ratio:16/10}
+
+/* shopping sheet */
+#shop{z-index:45}
+.pad{padding:calc(12px + env(safe-area-inset-top,0px)) 20px 40px}
+.sbar{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.sbar .rbtn{background:var(--soft);box-shadow:none;flex:none}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.cb2{width:36px;height:36px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;flex:none}
+.cb2.on{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.cb2 svg.i{width:18px;height:18px;stroke-width:3}
+.dn{text-decoration:line-through;color:var(--muted)}
+
+/* modals as bottom sheets on phones */
+.modal{display:flex;align-items:flex-end;justify-content:center;padding:0}
+.mbox{width:100%;border-radius:30px 30px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:88vh}
+@media(min-width:640px){.modal{align-items:center;padding:16px}.mbox{width:min(560px,100%);border-radius:30px}}
+.fh{font-size:15px;color:var(--muted);font-weight:700;margin-top:6px}
+.mfoot{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-top:6px}
+.plist{display:flex;flex-direction:column;overflow-y:auto;max-height:52vh}
+.pk{width:100%;text-align:left;padding:10px 4px}
+.pk .mt{display:block}
+.pk .tx{display:block}
+.pk .tx b,.pk .tx span{display:block}
+.meal .qty.sm{flex:none}
+.note{display:block}
+
+/* phones */
+@media(max-width:480px){
+  body{padding-inline:16px}
+  .top{margin-inline:-16px;padding-inline:16px}
+  .stories,.pills{margin-inline:-16px;padding-inline:16px}
+  .title{font-size:26px}
+  .land{border-radius:28px;padding:22px 16px}
+  .chatcard{padding:14px;border-radius:24px}
+  .day small{font-size:14px}
+  .big b{font-size:40px}
+  .body{padding-inline:16px}
+  .mc{gap:10px}.mo{width:66px}
+  .logo b{font-size:17px}
+  .ibtn{min-width:44px;height:44px;padding-inline:8px}
+}
+</style>
+<div class="top"><div class="wrap">
+  <div class="logo"><div class="logo-mark" aria-hidden="true">F</div><b>Food Space AI</b></div>
+  <button class="ibtn" id="langBtn" aria-label="Language">RU</button>
+  <button class="ibtn" id="themeBtn" aria-label="Theme"></button>
+  <button class="ibtn" id="cartBtn" aria-label="Shopping list"></button>
+</div></div>
+<main class="wrap" id="view"></main>
+<nav class="nav" id="nav" aria-label="Main"></nav>
+<div class="tbar" id="timerbar"></div>
+<div class="sheet" id="sheet" hidden></div>
+<div class="sheet" id="shop" hidden></div>
+<div class="cook" id="cook" hidden></div>
+<div class="modal" id="modal" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<script>
+// ---- DATA ----
+// key: [ru, uz, en, emoji, unit, search stems]
+const ING={
+egg:['Яйца','Tuxum','Eggs','🥚','pcs','яйц|яиц|tuxum|egg'],
+tomato:['Помидоры','Pomidor','Tomatoes','🍅','g','помидор|томат|pomidor|tomat'],
+chicken:['Курица','Tovuq','Chicken','🍗','g','кур|тавук|tovuq|chicken'],
+rice:['Рис','Guruch','Rice','🍚','g','рис|guruch|rice'],
+pasta:['Паста','Makaron','Pasta','🍝','g','паст|макарон|лапш|makaron|pasta|noodle'],
+beef:['Говядина','Mol go\'shti','Beef','🥩','g','говяд|мяс|mol go|go\'sht|beef|meat'],
+potato:['Картофель','Kartoshka','Potatoes','🥔','g','картоф|картош|kartoshka|potato'],
+cheese:['Сыр','Pishloq','Cheese','🧀','g','сыр|pishloq|cheese'],
+onion:['Лук','Piyoz','Onion','🧅','g','лук|piyoz|onion'],
+carrot:['Морковь','Sabzi','Carrot','🥕','g','морков|sabzi|carrot'],
+cucumber:['Огурцы','Bodring','Cucumbers','🥒','g','огур|bodring|cucumber'],
+milk:['Молоко','Sut','Milk','🥛','ml','молок|sut|milk'],
+flour:['Мука','Un','Flour','🌾','g','мук|un |flour'],
+butter:['Сливочное масло','Sariyog\'','Butter','🧈','g','сливочн|sariyog|butter'],
+oil:['Растительное масло','O\'simlik yog\'i','Vegetable oil','🫒','ml','раст.*масл|yog\'|oil'],
+sugar:['Сахар','Shakar','Sugar','🍬','g','сахар|shakar|sugar'],
+oats:['Овсяные хлопья','Suli yormasi','Oats','🥣','g','овсян|хлопья|suli|oat'],
+banana:['Бананы','Banan','Bananas','🍌','pcs','банан|banan'],
+yogurt:['Йогурт','Yogurt','Yogurt','🥣','g','йогурт|кефир|yogurt|qatiq'],
+bread:['Хлеб','Non','Bread','🍞','pcs','хлеб|тост|non|bread|toast'],
+cream:['Сливки','Qaymoq','Cream','🥛','ml','сливк|qaymoq|cream'],
+chocolate:['Шоколад','Shokolad','Chocolate','🍫','g','шоколад|shokolad|chocolate'],
+apple:['Яблоки','Olma','Apples','🍎','pcs','яблок|olma|apple'],
+berries:['Ягоды','Rezavor mevalar','Berries','🍓','g','ягод|клубник|rezavor|qulupnay|berr'],
+lemon:['Лимон','Limon','Lemon','🍋','pcs','лимон|limon|lemon'],
+garlic:['Чеснок','Sarimsoq','Garlic','🧄','pcs','чесн|sarimsoq|garlic'],
+pepper:['Болгарский перец','Bolgar qalampiri','Bell pepper','🫑','g','перец|перц|qalampir|pepper'],
+mushroom:['Грибы','Qo\'ziqorin','Mushrooms','🍄','g','гриб|шампин|qo\'ziqorin|mushroom'],
+fish:['Рыба','Baliq','Fish','🐟','g','рыб|baliq|fish'],
+lamb:['Баранина','Qo\'y go\'shti','Lamb','🍖','g','баран|qo\'y|lamb'],
+cabbage:['Капуста','Karam','Cabbage','🥬','g','капуст|karam|cabbage'],
+greens:['Зелень','Ko\'katlar','Fresh herbs','🌿','g','зелен|укроп|петрушк|ko\'kat|herb|parsley'],
+cottage:['Творог','Tvorog','Cottage cheese','🥛','g','творог|tvorog|cottage'],
+honey:['Мёд','Asal','Honey','🍯','g','мёд|мед |asal|honey'],
+nuts:['Орехи','Yong\'oq','Nuts','🥜','g','орех|yong\'oq|nut|walnut'],
+avocado:['Авокадо','Avokado','Avocado','🥑','pcs','авокадо|avokado|avocado'],
+lentils:['Чечевица','Yasmiq','Lentils','🫘','g','чечевиц|yasmiq|lentil'],
+beans:['Фасоль','Loviya','Beans','🫘','g','фасол|loviya|bean'],
+corn:['Кукуруза','Makkajo\'xori','Corn','🌽','g','кукуруз|makkajo|corn'],
+tuna:['Тунец','Orqa tunets','Tuna','🐟','g','тунец|tunets|tuna'],
+pumpkin:['Тыква','Qovoq','Pumpkin','🎃','g','тыкв|qovoq|pumpkin'],
+semolina:['Манка','Manniy yorma','Semolina','🥣','g','манк|manniy|semolina'],
+beet:['Свёкла','Lavlagi','Beetroot','🟣','g','свёкл|свекл|lavlagi|beet'],
+gelatin:['Желатин','Jelatin','Gelatin','','g','желатин|jelatin|gelatin']
+};
+const CATS=[
+ {id:'all',em:'✨',h:8,n:['Все','Hammasi','All']},
+ {id:'b',em:'🍳',h:38,n:['Завтраки','Nonushta','Breakfast']},
+ {id:'h',em:'🍲',h:8,n:['Горячее','Issiq taom','Mains']},
+ {id:'s',em:'🥗',h:110,n:['Салаты','Salatlar','Salads']},
+ {id:'d',em:'🍰',h:330,n:['Десерты','Desertlar','Desserts']}
+];
+const HUE={b:38,h:8,s:110,d:330};
+// emoji|cat|min|kcal|P|F|C|rating|ru|uz|en|ingredients(key:amount)
+const RAW=`🍳|b|12|320|18|24|6|4.7|Яичница с помидорами|Pomidorli qovurilgan tuxum|Tomato scrambled eggs|egg:3,tomato:150,onion:30,oil:10
+🥞|b|25|380|24|16|34|4.8|Сырники|Tvorogli sirniki|Cottage cheese pancakes|cottage:300,egg:1,flour:60,sugar:30,oil:20
+🥣|b|10|340|11|8|58|4.6|Овсянка с бананом|Bananli suli bo'tqasi|Banana oatmeal|oats:80,milk:200,banana:1,honey:10
+🥞|b|30|310|9|12|40|4.7|Тонкие блины|Yupqa bliniy|Thin crepes|flour:200,milk:400,egg:2,sugar:20,butter:20
+🥑|b|10|390|15|26|24|4.8|Тост с авокадо и яйцом|Avokado va tuxumli tost|Avocado egg toast|bread:2,avocado:1,egg:1,lemon:1
+🧀|b|10|410|27|32|3|4.7|Омлет с сыром|Pishloqli omlet|Cheese omelette|egg:3,cheese:50,milk:50,butter:10
+🥣|b|15|290|9|9|44|4.4|Манная каша|Manniy bo'tqa|Semolina porridge|semolina:60,milk:300,sugar:15,butter:10
+🥪|b|15|430|32|16|38|4.7|Сэндвич с курицей|Tovuqli sendvich|Chicken sandwich|bread:2,chicken:100,cheese:30,tomato:50,greens:10
+🍓|b|5|330|14|9|47|4.8|Йогурт с ягодами и овсянкой|Rezavorli yogurt|Berry yogurt bowl|yogurt:200,berries:100,oats:40,honey:15
+🍳|b|25|360|19|24|18|4.9|Шакшука|Shakshuka|Shakshuka|egg:3,tomato:300,pepper:100,onion:60,garlic:2,oil:20
+🥔|b|30|400|9|20|47|4.6|Драники|Draniki|Potato pancakes|potato:400,egg:1,flour:30,onion:40,oil:40
+🧇|b|25|450|11|20|56|4.7|Вафли|Vafli|Waffles|flour:200,milk:250,egg:2,butter:50,sugar:30
+🎃|b|30|320|8|10|50|4.5|Рисовая каша с тыквой|Qovoqli guruch bo'tqasi|Pumpkin rice porridge|rice:80,pumpkin:200,milk:300,butter:10,honey:10
+🥞|b|25|370|10|14|50|4.7|Пышные оладьи|Qatiqli oladiyalar|Fluffy pancakes|flour:200,yogurt:250,egg:1,sugar:25,oil:30
+🍞|b|10|300|14|16|24|4.6|Яйца пашот на тосте|Tostdagi poshot tuxum|Poached eggs on toast|bread:2,egg:2,butter:10,greens:10
+🍗|h|75|620|45|28|48|4.9|Курица с картофелем в духовке|Pechda tovuq va kartoshka|Roast chicken with potatoes|chicken:600,potato:500,garlic:3,oil:30,lemon:1
+🍝|h|25|640|27|30|62|4.8|Паста карбонара|Karbonara pastasi|Pasta carbonara|pasta:200,egg:2,cheese:60,butter:15,garlic:1
+🍚|h|90|700|32|32|68|5.0|Плов|Osh (palov)|Plov|rice:300,beef:400,carrot:300,onion:150,oil:100,garlic:1
+🥩|h|40|560|38|36|18|4.7|Бефстроганов|Befstroganov|Beef Stroganoff|beef:400,onion:100,cream:150,mushroom:150,butter:20
+🍲|h|120|380|24|16|34|4.9|Борщ|Borsh|Borscht|beef:300,potato:200,cabbage:200,carrot:100,onion:80,tomato:100,beet:150
+🍲|h|45|330|27|10|34|4.7|Куриный суп с лапшой|Tovuq sho'rva|Chicken noodle soup|chicken:400,pasta:80,potato:150,carrot:80,onion:60
+🥟|h|90|520|28|26|42|4.9|Манты|Manti|Manti|flour:400,lamb:400,onion:250,pumpkin:100,oil:20
+🍝|h|40|590|31|22|65|4.8|Паста болоньезе|Bolonez pastasi|Pasta Bolognese|pasta:200,beef:250,tomato:200,onion:80,garlic:2,carrot:60
+🍜|h|60|610|30|24|70|4.8|Лагман|Lag'mon|Lagman|pasta:250,beef:300,pepper:100,carrot:100,potato:150,onion:100,tomato:100
+🥘|h|80|580|36|28|44|4.7|Жаркое из говядины|Mol go'shtli qovurma|Beef pot roast|beef:400,potato:500,onion:100,carrot:80,oil:30
+🍲|h|100|470|30|26|28|4.8|Шурпа|Sho'rva|Shurpa lamb soup|lamb:500,potato:300,carrot:150,onion:150,tomato:150,pepper:100
+🍔|h|35|350|34|18|12|4.6|Куриные котлеты|Tovuq kotleti|Chicken patties|chicken:500,egg:1,onion:80,bread:2,oil:30
+🐟|h|35|430|38|20|22|4.7|Запечённая рыба с лимоном|Limonli pishirilgan baliq|Baked lemon fish|fish:500,lemon:1,butter:20,greens:15,potato:300
+🫑|h|60|390|22|16|38|4.6|Фаршированный перец|To'ldirilgan qalampir|Stuffed peppers|pepper:500,beef:300,rice:100,onion:80,tomato:150
+🥔|h|45|410|7|18|55|4.6|Картофель по-деревенски|Qishloqcha kartoshka|Country-style potatoes|potato:700,oil:40,garlic:3,greens:10
+🍲|h|40|310|19|7|45|4.5|Чечевичный суп|Yasmiq sho'rva|Lentil soup|lentils:200,carrot:80,onion:80,tomato:100,oil:20
+🍝|h|30|680|38|34|56|4.8|Паста с курицей и сливками|Qaymoqli tovuqli pasta|Creamy chicken pasta|pasta:200,chicken:250,cream:150,cheese:40,garlic:2
+🥘|h|50|520|36|14|62|4.7|Курица с рисом|Guruchli tovuq|Chicken with rice|chicken:400,rice:200,onion:80,carrot:80,oil:20
+🥩|h|20|540|46|38|2|4.9|Говяжий стейк|Mol go'shti steyk|Beef steak|beef:300,butter:20,garlic:2,greens:10
+🥟|h|60|470|12|14|72|4.6|Вареники с картофелем|Kartoshkali vareniki|Potato dumplings|flour:300,potato:400,onion:80,butter:30,egg:1
+🥗|s|15|210|8|15|10|4.8|Греческий салат|Yunon salati|Greek salad|tomato:250,cucumber:200,cheese:100,onion:40,oil:20,pepper:80
+🥗|s|20|360|28|20|16|4.8|Цезарь с курицей|Tovuqli Sezar|Chicken Caesar|chicken:200,greens:100,cheese:40,bread:2,egg:1,oil:20
+🥗|s|40|330|12|18|30|4.7|Оливье|Olivye|Olivier salad|potato:300,carrot:150,egg:3,cucumber:150,chicken:200,corn:100
+🥒|s|10|120|3|7|13|4.5|Салат из огурцов и помидоров|Pomidor-bodring salati|Tomato cucumber salad|tomato:300,cucumber:250,onion:40,greens:20,oil:20
+🥗|s|35|230|6|12|26|4.6|Винегрет|Vinegret|Vinaigrette|potato:200,carrot:100,beet:150,beans:100,onion:40,oil:30
+🐟|s|15|290|24|16|12|4.6|Салат с тунцом|Orqa tunets salati|Tuna salad|tuna:150,egg:2,cucumber:150,greens:30,corn:80,oil:15
+🥬|s|10|130|3|7|15|4.4|Капустный салат|Karam salati|Cabbage slaw|cabbage:300,carrot:100,oil:20,greens:15,lemon:1
+🥑|s|10|280|5|23|16|4.7|Салат с авокадо|Avokadoli salat|Avocado salad|avocado:1,tomato:150,cucumber:100,lemon:1,greens:20,oil:15
+🍄|s|25|340|27|22|8|4.6|Салат с курицей и грибами|Tovuq va qo'ziqorinli salat|Chicken mushroom salad|chicken:200,mushroom:200,cheese:50,egg:2,onion:40
+🍅|s|10|90|2|5|11|4.7|Ачичук|Achichuk|Achichuk tomato salad|tomato:400,onion:100,pepper:50,greens:20
+🟣|s|30|190|5|11|20|4.5|Салат из свёклы с орехами|Yong'oqli lavlagi salati|Beet and walnut salad|beet:300,garlic:2,nuts:40,oil:20
+🫘|s|15|250|11|9|32|4.4|Салат из фасоли|Loviya salati|Bean salad|beans:250,onion:50,tomato:150,greens:20,oil:20
+🍅|s|10|320|17|25|7|4.8|Капрезе|Kapreze|Caprese|tomato:300,cheese:150,greens:15,oil:20
+🍚|s|25|350|14|12|45|4.5|Салат с рисом и яйцом|Guruchli tuxumli salat|Rice and egg salad|rice:150,egg:3,corn:100,cucumber:100,greens:20
+🥗|s|25|370|30|20|16|4.7|Тёплый салат с говядиной|Mol go'shtli iliq salat|Warm beef salad|beef:250,pepper:100,cucumber:100,onion:50,oil:20
+🍰|d|90|420|11|28|34|4.9|Чизкейк|Chizkeyk|Cheesecake|cottage:500,cream:200,egg:3,sugar:100,flour:30
+🍫|d|45|470|6|26|55|4.9|Шоколадный брауни|Shokoladli braunni|Chocolate brownie|chocolate:200,butter:150,egg:3,sugar:150,flour:80
+🍎|d|70|360|5|15|53|4.8|Яблочный пирог|Olmali pirog|Apple pie|apple:4,flour:250,butter:120,sugar:80,egg:1
+🍮|d|20|310|4|24|20|4.7|Панна-котта|Panna kotta|Panna cotta|cream:400,milk:100,sugar:50,berries:80,gelatin:7
+🍓|d|10|230|11|9|28|4.7|Ягодный десерт с йогуртом|Rezavorli yogurtli desert|Berry yogurt dessert|yogurt:300,berries:150,honey:20,nuts:30
+🍪|d|30|240|4|11|32|4.6|Овсяное печенье|Suli pechenyesi|Oatmeal cookies|oats:150,flour:100,butter:100,sugar:70,egg:1
+🍌|d|65|330|5|12|50|4.7|Банановый хлеб|Bananli non|Banana bread|banana:3,flour:200,egg:2,sugar:80,butter:80
+🍯|d|90|440|6|24|52|4.8|Медовик|Medovik|Honey layer cake|flour:400,honey:100,egg:3,sugar:100,cream:400
+🧁|d|35|380|6|18|49|4.7|Маффины|Maffinlar|Chocolate muffins|flour:250,milk:150,egg:2,sugar:100,butter:80,chocolate:50
+🥧|d|75|350|5|16|48|4.6|Тыквенный пирог|Qovoqli pirog|Pumpkin pie|pumpkin:400,flour:200,butter:100,egg:2,sugar:90
+🍨|d|30|290|5|19|26|4.8|Домашнее мороженое|Uy muzqaymog'i|Homemade ice cream|cream:300,milk:200,sugar:80,egg:3
+🍮|d|50|390|6|30|25|4.8|Крем-брюле|Krem-bryule|Crème brûlée|cream:400,egg:4,sugar:80
+🍫|d|25|430|7|32|29|4.8|Шоколадный мусс|Shokoladli mus|Chocolate mousse|chocolate:200,cream:250,egg:3,sugar:30
+🍎|d|30|210|2|8|36|4.6|Печёные яблоки с мёдом|Asalli pishirilgan olma|Baked apples with honey|apple:4,honey:40,nuts:40,butter:20
+🥮|d|45|300|7|9|47|4.5|Рисовый пудинг|Guruchli pudding|Rice pudding|rice:100,milk:600,sugar:50,butter:10`;
+const REC=RAW.split('\n').map((l,i)=>{const p=l.split('|');const ing=p[11].split(',').map(x=>{const [k,a]=x.split(':');return [k,+a]});
+ return {id:i+1,cat:p[1],min:+p[2],rate:p[7],n:[p[8],p[9],p[10]],ing,h:HUE[p[1]],serv:1,kcal:0,P:0,F:0,C:0,tags:{}}});
+// Nutrition per 100 g (protein, fat, carbs): typical reference values for RAW weights. Recipe values are calculated from the ingredient list, so they are a guide, not a lab result.
+const NUT={
+egg:[12.6,9.5,.7],tomato:[.9,.2,3.9],chicken:[20,10,0],rice:[7,.6,79],pasta:[12.5,1.5,74],beef:[19,12,0],potato:[2,.1,17],cheese:[22,26,2],onion:[1.1,.1,9.3],carrot:[.9,.2,9.6],cucumber:[.7,.1,3.6],milk:[3.2,3.3,4.8],flour:[10,1,71],butter:[.9,81,.1],oil:[0,100,0],sugar:[0,0,100],oats:[13,7,60],banana:[1.1,.3,23],yogurt:[4,2.5,5],bread:[9,3.2,49],cream:[2.8,20,3.7],chocolate:[6,36,50],apple:[.3,.2,14],berries:[.8,.4,10],lemon:[1.1,.3,9],garlic:[6.4,.5,33],pepper:[1,.2,6],mushroom:[3,.3,3.3],fish:[18,3.5,0],lamb:[17,20,0],cabbage:[1.3,.1,5.8],greens:[3,.5,5],cottage:[17,6,2],honey:[.3,0,82],nuts:[15,65,14],avocado:[2,15,9],lentils:[25,1,60],beans:[7,.5,17],corn:[2.5,1,16],tuna:[26,1,0],pumpkin:[1,.1,6.5],semolina:[11,1,73],beet:[1.6,.2,10],gelatin:[86,0,0]
+};
+const PCS={egg:50,banana:120,bread:30,apple:180,avocado:150,lemon:60,garlic:4};
+const DENS={milk:1.03,oil:.92,cream:1};
+const TAGS={meat:['chicken','beef','lamb'],fish:['fish','tuna'],egg:['egg'],dairy:['milk','cheese','butter','cream','yogurt','cottage'],gluten:['flour','pasta','bread','semolina','oats'],nuts:['nuts']};
+const SERV=[1,3,1,3,1,1,2,1,1,2,2,4,2,3,1, 4,2,5,3,5,4,5,3,4,4,5,4,3,4,4,4,3,4,2,4, 2,2,4,2,3,2,3,2,3,2,3,3,2,3,2, 8,8,8,4,2,8,8,8,6,8,6,4,6,4,4];
+function gramsOf(k,a){const u=ING[k][4];return u==='pcs'?a*(PCS[k]||50):u==='ml'?a*(DENS[k]||1):a}
+REC.forEach((r,i)=>{
+ r.serv=SERV[i]||2;let P=0,F=0,C=0;
+ r.ing.forEach(([k,a])=>{const g=gramsOf(k,a)/100,n=NUT[k]||[0,0,0];P+=n[0]*g;F+=n[1]*g;C+=n[2]*g});
+ r.P=Math.round(P/r.serv);r.F=Math.round(F/r.serv);r.C=Math.round(C/r.serv);
+ r.kcal=Math.round((4*P+9*F+4*C)/r.serv/5)*5;
+ Object.keys(TAGS).forEach(t=>{if(r.ing.some(x=>TAGS[t].includes(x[0])))r.tags[t]=1});
+});
+// ---- RECIPE STEPS: ST[id] = [ru, uz, en]; steps separated by ~, a trailing @N marks a wait of N minutes (timer) ----
+const ST={};
+ST[1]=["Лук мелко нарежьте, помидоры нарежьте кубиками.~Разогрейте масло на сковороде и обжарьте лук 2 минуты до мягкости.@2~Добавьте помидоры и тушите 3–4 минуты, пока не выпарится лишний сок.@4~Вбейте яйца, посолите, перемешайте и готовьте под крышкой 3 минуты на среднем огне.@3~Подавайте сразу, по желанию посыпав зеленью.",
+"Piyozni mayda to'g'rang, pomidorni kubik shaklida kesing.~Tovada yog'ni qizdirib, piyozni 2 daqiqa yumshaguncha qovuring.@2~Pomidorni qo'shib, ortiqcha suvi bug'languncha 3–4 daqiqa dimlang.@4~Tuxumlarni sindirib soling, tuz seping, aralashtiring va o'rtacha olovda qopqoq ostida 3 daqiqa pishiring.@3~Darrov torting, xohlasangiz ko'katlar seping.",
+"Chop the onion finely and dice the tomatoes.~Heat the oil in a pan and cook the onion for 2 minutes until soft.@2~Add the tomatoes and simmer 3–4 minutes until the excess juice cooks off.@4~Add the eggs, season with salt, stir and cook covered for 3 minutes over medium heat.@3~Serve at once, with herbs if you like."];
+ST[2]=["Если творог влажный, отожмите его через марлю или сито.~Разомните творог с яйцом и сахаром, добавьте муку и замесите мягкое тесто.~Сформируйте небольшие лепёшки толщиной около 1,5 см, обваляйте их в муке.~Обжаривайте на масле по 3 минуты с каждой стороны на среднем огне до золотистой корочки.@6~Подавайте со сметаной, мёдом или ягодами.",
+"Tvorog nam bo'lsa, doka yoki elakda siqib oling.~Tvorogni tuxum va shakar bilan ezing, un qo'shib yumshoq xamir qoring.~Qalinligi taxminan 1,5 sm li kichik yassi kotletlar yasab, unga to'nkaring.~Yog'da o'rtacha olovda har tomonini 3 daqiqadan oltin rang bo'lguncha qovuring.@6~Qaymoq, asal yoki rezavor mevalar bilan torting.",
+"If the cottage cheese is wet, squeeze it through cheesecloth or a sieve.~Mash it with the egg and sugar, add the flour and knead a soft dough.~Shape small patties about 1.5 cm thick and coat them in flour.~Fry in oil 3 minutes per side over medium heat until golden.@6~Serve with sour cream, honey or berries."];
+ST[3]=["Налейте молоко в кастрюлю и доведите почти до кипения.~Всыпьте овсяные хлопья и варите на слабом огне 5–7 минут, помешивая.@6~Банан нарежьте кружками.~Переложите кашу в тарелку, сверху выложите банан и полейте мёдом.",
+"Sutni qozonchaga quyib, qaynash arafasigacha isiting.~Suli yormasini solib, past olovda aralashtirib 5–7 daqiqa pishiring.@6~Bananni halqa shaklida kesing.~Bo'tqani likopchaga solib, ustiga banan qo'ying va asal quying.",
+"Pour the milk into a pot and heat until just below boiling.~Add the oats and cook on low heat for 5–7 minutes, stirring.@6~Slice the banana into rounds.~Spoon the porridge into a bowl, top with the banana and drizzle with honey."];
+ST[4]=["Взбейте яйца с сахаром и щепоткой соли.~Влейте половину молока, добавьте муку и размешайте до гладкости без комков.~Добавьте оставшееся молоко и растопленное масло, дайте тесту постоять 15 минут.@15~Разогрейте сковороду, слегка смажьте маслом и вылейте половник теста, распределяя его тонким слоем.~Жарьте по 1–2 минуты с каждой стороны до румяных краёв.@2~Подавайте со сметаной, вареньем или творогом.",
+"Tuxumni shakar va bir chimdim tuz bilan ko'pirtiring.~Sutning yarmini quyib, un qo'shing va bo'laksiz bir tekis aralashtiring.~Qolgan sut va erigan sariyog'ni qo'shib, xamirni 15 daqiqa qoldiring.@15~Tovani qizdirib, yengil moy surting va bir cho'mich xamirni quyib yupqa yoying.~Har tomonini 1–2 daqiqadan chetlari qizarguncha pishiring.@2~Qaymoq, murabbo yoki tvorog bilan torting.",
+"Whisk the eggs with the sugar and a pinch of salt.~Pour in half the milk, add the flour and whisk until smooth with no lumps.~Add the rest of the milk and the melted butter, then rest the batter for 15 minutes.@15~Heat a pan, grease it lightly and pour in a ladle of batter, swirling it thin.~Cook 1–2 minutes per side until the edges are golden.@2~Serve with sour cream, jam or cottage cheese."];
+ST[5]=["Подсушите хлеб в тостере или на сухой сковороде.~Разомните мякоть авокадо вилкой с соком лимона и щепоткой соли.~Сварите яйцо (7–8 минут) или пожарьте глазунью 3 минуты.@7~Намажьте авокадо на хлеб, сверху положите яйцо и поперчите.",
+"Nonni tosterda yoki quruq tovada qizartiring.~Avokado go'shtini vilka bilan limon sharbati va bir chimdim tuz qo'shib ezing.~Tuxumni qaynating (7–8 daqiqa) yoki 3 daqiqa ko'zli qilib qovuring.@7~Avokadoni nonga surting, ustiga tuxumni qo'ying va murch seping.",
+"Toast the bread in a toaster or a dry pan.~Mash the avocado with the lemon juice and a pinch of salt.~Boil the egg (7–8 minutes) or fry it sunny-side up for 3 minutes.@7~Spread the avocado on the toast, top with the egg and season with pepper."];
+ST[6]=["Взбейте яйца с молоком и щепоткой соли.~Натрите сыр на крупной тёрке.~Растопите масло на сковороде, влейте яйца и готовьте на слабом огне 2–3 минуты.@3~Посыпьте половину омлета сыром и накройте крышкой на 1 минуту.@1~Сложите омлет пополам и подавайте сразу.",
+"Tuxumni sut va bir chimdim tuz bilan chayqating.~Pishloqni yirik qirg'ichdan o'tkazing.~Tovada sariyog'ni eritib, tuxum aralashmasini quying va past olovda 2–3 daqiqa pishiring.@3~Omletning yarmiga pishloq seping va qopqoq yopib 1 daqiqa qoldiring.@1~Omletni ikkiga buklab, darrov torting.",
+"Whisk the eggs with the milk and a pinch of salt.~Grate the cheese.~Melt the butter in a pan, pour in the eggs and cook on low heat for 2–3 minutes.@3~Sprinkle cheese over half the omelette and cover for 1 minute.@1~Fold in half and serve right away."];
+ST[7]=["Доведите молоко с сахаром и щепоткой соли до кипения.~Тонкой струйкой всыпайте манку, постоянно помешивая, чтобы не образовались комки.~Варите на слабом огне 3–5 минут, помешивая.@4~Снимите с огня, добавьте масло и накройте крышкой на 5 минут.@5~Подавайте тёплой с вареньем или ягодами.",
+"Sutni shakar va bir chimdim tuz bilan qaynating.~Manniy yormani bo'laklar hosil bo'lmasligi uchun doim aralashtirib, ingichka oqim bilan soling.~Past olovda aralashtirib 3–5 daqiqa pishiring.@4~Olovdan olib, sariyog' qo'shing va qopqoq yopib 5 daqiqa qoldiring.@5~Iliq holda murabbo yoki rezavor mevalar bilan torting.",
+"Bring the milk with the sugar and a pinch of salt to a boil.~Pour in the semolina in a thin stream, stirring constantly to avoid lumps.~Cook on low heat for 3–5 minutes, stirring.@4~Take off the heat, add the butter and cover for 5 minutes.@5~Serve warm with jam or berries."];
+ST[8]=["Куриное филе посолите, поперчите и обжарьте на сухой сковороде или с каплей масла по 5 минут с каждой стороны до готовности.@10~Нарежьте курицу тонкими ломтиками, помидор кружками, сыр пластинами.~Подсушите хлеб на сковороде.~Соберите сэндвич: хлеб, зелень, курица, помидор, сыр, второй ломтик хлеба.~При желании прогрейте сэндвич на сковороде по минуте с каждой стороны, чтобы сыр расплавился.@2",
+"Tovuq filesiga tuz va murch seping, quruq tovada yoki bir tomchi yog'da har tomonini 5 daqiqadan pishiring.@10~Tovuqni yupqa, pomidorni halqa, pishloqni plastinka qilib kesing.~Nonni tovada qizartiring.~Sendvichni yig'ing: non, ko'katlar, tovuq, pomidor, pishloq va ikkinchi bo'lak non.~Xohlasangiz, pishloq erishi uchun sendvichni tovada har tomonini 1 daqiqadan qizdiring.@2",
+"Season the chicken with salt and pepper and cook in a dry pan or with a drop of oil, 5 minutes per side, until cooked through.@10~Slice the chicken thinly, the tomato into rounds and the cheese into slices.~Toast the bread in a pan.~Assemble: bread, herbs, chicken, tomato, cheese and the second slice of bread.~If you like, warm the sandwich 1 minute per side so the cheese melts.@2"];
+ST[9]=["Если хотите хруста, слегка подсушите овсяные хлопья на сухой сковороде 3 минуты.@3~В стакан или миску выложите слоями йогурт, ягоды и хлопья.~Полейте мёдом и подавайте сразу, пока хлопья хрустят.",
+"Xirsillab turishini istasangiz, suli yormasini quruq tovada 3 daqiqa qizdiring.@3~Stakan yoki idishga yogurt, rezavor mevalar va yormani qatlam-qatlam soling.~Asal quyib, yorma xirsillab turganda darrov torting.",
+"For crunch, toast the oats in a dry pan for 3 minutes.@3~Layer the yogurt, berries and oats in a glass or bowl.~Drizzle with honey and serve right away while the oats are crisp."];
+ST[10]=["Лук и перец нарежьте мелко, чеснок измельчите, помидоры нарежьте кубиками.~Разогрейте масло в глубокой сковороде и обжарьте лук и перец 5 минут.@5~Добавьте чеснок и помидоры, посолите, приправьте паприкой или зирой и тушите 10 минут до густого соуса.@10~Сделайте в соусе углубления и вбейте в них яйца.~Накройте крышкой и готовьте 5–7 минут, пока белок не схватится, а желток останется мягким.@6~Посыпьте зеленью и подавайте прямо в сковороде с хлебом.",
+"Piyoz va qalampirni mayda to'g'rang, sarimsoqni maydalang, pomidorni kubik shaklida kesing.~Chuqur tovada yog'ni qizdirib, piyoz va qalampirni 5 daqiqa qovuring.@5~Sarimsoq va pomidorni qo'shing, tuz soling, paprika yoki zira seping va quyuq sous hosil bo'lguncha 10 daqiqa dimlang.@10~Sousda kichik chuqurchalar qilib, ularga tuxumlarni sindirib soling.~Qopqoq yopib, oqi qotguncha, sarig'i esa yumshoq qolguncha 5–7 daqiqa pishiring.@6~Ko'katlar sepib, tovaning o'zida non bilan torting.",
+"Chop the onion and pepper finely, mince the garlic and dice the tomatoes.~Heat the oil in a deep pan and cook the onion and pepper for 5 minutes.@5~Add the garlic and tomatoes, season with salt and paprika or cumin and simmer 10 minutes into a thick sauce.@10~Make wells in the sauce and crack the eggs into them.~Cover and cook 5–7 minutes until the whites set and the yolks are still soft.@6~Sprinkle with herbs and serve straight from the pan with bread."];
+ST[11]=["Картофель и лук натрите на мелкой тёрке, отожмите лишнюю жидкость.~Добавьте яйцо, муку и соль, перемешайте.~Разогрейте масло на сковороде и выложите ложкой небольшие лепёшки.~Жарьте по 3–4 минуты с каждой стороны до золотистой корочки.@7~Выложите на бумажное полотенце и подавайте со сметаной.",
+"Kartoshka va piyozni mayda qirg'ichdan o'tkazib, ortiqcha suvini siqib oling.~Tuxum, un va tuz qo'shib aralashtiring.~Tovada yog'ni qizdirib, qoshiq bilan kichik yassi kotletlar qo'ying.~Har tomonini 3–4 daqiqadan oltin rang bo'lguncha qovuring.@7~Qog'oz sochiqqa olib, qaymoq bilan torting.",
+"Grate the potatoes and onion finely and squeeze out the excess liquid.~Add the egg, flour and salt and mix.~Heat the oil in a pan and spoon in small patties.~Fry 3–4 minutes per side until golden.@7~Drain on paper towels and serve with sour cream."];
+ST[12]=["Растопите масло и слегка остудите.~Взбейте яйца с сахаром, влейте молоко и масло.~Добавьте муку со щепоткой соли (и разрыхлителем, если есть), размешайте до гладкого теста.~Дайте тесту постоять 10 минут, пока разогревается вафельница.@10~Выпекайте вафли по инструкции к вафельнице, обычно 3–4 минуты.@4~Подавайте горячими с мёдом, ягодами или сиропом.",
+"Sariyog'ni eritib, biroz sovuting.~Tuxumni shakar bilan ko'pirtirib, sut va sariyog'ni quying.~Un va bir chimdim tuz (bo'lsa, pishiruvchi kukun ham) qo'shib, bir tekis xamir qoring.~Vafli qolipi qizib turganda xamirni 10 daqiqa qoldiring.@10~Vaflilarni qolip yo'riqnomasiga ko'ra, odatda 3–4 daqiqa pishiring.@4~Issiq holda asal, rezavor meva yoki sirop bilan torting.",
+"Melt the butter and let it cool slightly.~Whisk the eggs with the sugar, then add the milk and butter.~Stir in the flour and a pinch of salt (and baking powder, if you have it) until smooth.~Rest the batter 10 minutes while the waffle iron heats up.@10~Bake according to your waffle iron, usually 3–4 minutes.@4~Serve hot with honey, berries or syrup."];
+ST[13]=["Тыкву очистите и нарежьте мелкими кубиками, рис промойте.~Залейте тыкву небольшим количеством воды и варите 10 минут до мягкости.@10~Добавьте рис и молоко, посолите и варите на слабом огне 20 минут, помешивая.@20~Добавьте масло, накройте крышкой и дайте настояться 5 минут.@5~Подавайте с мёдом.",
+"Qovoqni tozalab mayda kubik shaklida kesing, guruchni yuving.~Qovoq ustiga ozgina suv quyib, yumshaguncha 10 daqiqa qaynating.@10~Guruch va sutni qo'shing, tuz soling va past olovda aralashtirib 20 daqiqa pishiring.@20~Sariyog' qo'shib, qopqoq yopib 5 daqiqa damlang.@5~Asal bilan torting.",
+"Peel the pumpkin and cut it into small cubes; rinse the rice.~Cover the pumpkin with a little water and cook 10 minutes until soft.@10~Add the rice and milk, season with salt and cook on low heat for 20 minutes, stirring.@20~Add the butter, cover and rest for 5 minutes.@5~Serve with honey."];
+ST[14]=["Смешайте йогурт (или кефир), яйцо, сахар и щепотку соли.~Добавьте муку и чайную ложку соды, быстро перемешайте: тесто должно быть густым.~Подождите 5 минут, пока тесто начнёт пузыриться.@5~Разогрейте масло и выкладывайте ложкой небольшие оладьи.~Жарьте под крышкой на среднем огне по 2–3 минуты с каждой стороны.@5~Подавайте со сметаной, вареньем или мёдом.",
+"Yogurt (yoki qatiq), tuxum, shakar va bir chimdim tuzni aralashtiring.~Un va bir choy qoshiq soda qo'shib tez aralashtiring: xamir quyuq bo'lishi kerak.~Xamir ko'piklana boshlaguncha 5 daqiqa kuting.@5~Yog'ni qizdirib, qoshiq bilan kichik oladyalar qo'ying.~Qopqoq ostida o'rtacha olovda har tomonini 2–3 daqiqadan pishiring.@5~Qaymoq, murabbo yoki asal bilan torting.",
+"Mix the yogurt (or kefir), egg, sugar and a pinch of salt.~Add the flour and a teaspoon of baking soda and stir quickly; the batter should be thick.~Wait 5 minutes until the batter starts to bubble.@5~Heat the oil and spoon in small pancakes.~Cook covered over medium heat 2–3 minutes per side.@5~Serve with sour cream, jam or honey."];
+ST[15]=["Вскипятите воду в широкой кастрюле, убавьте огонь до слабого и добавьте ложку уксуса.~Разбейте яйцо в чашку, создайте в воде воронку и аккуратно опустите яйцо в центр.~Варите 3 минуты, затем достаньте шумовкой.@3~Подсушите хлеб и намажьте маслом.~Положите яйца на тосты, посолите, поперчите и посыпьте зеленью.",
+"Keng qozonda suvni qaynatib, olovni pasaytiring va bir qoshiq sirka qo'shing.~Tuxumni piyolaga sindirib, suvda girdob hosil qiling va tuxumni o'rtasiga ehtiyotkorlik bilan tushiring.~3 daqiqa pishirib, ko'p teshikli qoshiq bilan oling.@3~Nonni qizartirib, sariyog' surting.~Tuxumlarni tostlar ustiga qo'yib, tuz, murch va ko'katlar seping.",
+"Bring water to a boil in a wide pot, lower to a gentle simmer and add a spoon of vinegar.~Crack an egg into a cup, stir the water into a whirlpool and slide the egg into the centre.~Poach for 3 minutes, then lift out with a slotted spoon.@3~Toast the bread and spread with butter.~Place the eggs on the toast, season with salt and pepper and sprinkle with herbs."];
+ST[16]=["Разогрейте духовку до 200 °C.~Картофель нарежьте крупными дольками. Чеснок измельчите, лимон выжмите.~Смешайте масло, чеснок, лимонный сок, соль, перец и паприку. Натрите этой смесью курицу и картофель.~Выложите в форму: курицу кожей вверх, вокруг картофель.~Запекайте 45–50 минут, один раз перемешав картофель, до золотистой корочки.@50~Проверьте готовность: сок из самого толстого места должен быть прозрачным. Дайте мясу постоять 5 минут.@5",
+"Pechni 200 °C gacha qizdiring.~Kartoshkani yirik bo'laklarga to'g'rang. Sarimsoqni maydalang, limondan sharbat siqing.~Yog', sarimsoq, limon sharbati, tuz, murch va paprikani aralashtiring. Bu aralashma bilan tovuq va kartoshkani ishqalang.~Qolipga tovuqni terisi yuqoriga qilib, atrofiga kartoshkani joylang.~45–50 daqiqa, kartoshkani bir marta aralashtirib, oltin rang bo'lguncha pishiring.@50~Tayyorligini tekshiring: eng qalin joyidan chiqqan sharbat tiniq bo'lishi kerak. Go'shtni 5 daqiqa damlang.@5",
+"Heat the oven to 200 °C.~Cut the potatoes into large wedges. Mince the garlic and squeeze the lemon.~Mix oil, garlic, lemon juice, salt, pepper and paprika. Rub the chicken and potatoes with it.~Put them in a baking dish with the chicken skin side up and the potatoes around it.~Roast 45–50 minutes, stirring the potatoes once, until golden.@50~Check doneness: the juice from the thickest part should run clear. Rest the meat for 5 minutes.@5"];
+ST[17]=["Вскипятите подсоленную воду и варите пасту на 1 минуту меньше, чем указано на упаковке.@8~Пока варится паста, взбейте яйца с тёртым сыром и чёрным перцем.~Растопите масло на сковороде, обжарьте раздавленный чеснок 1 минуту и уберите его.@1~Переложите пасту в сковороду с маслом, оставив полчашки воды от варки.~Снимите с огня, влейте яичную смесь и быстро перемешайте, добавляя по ложке воды до кремовой текстуры.~Подавайте сразу, посыпав сыром и перцем.",
+"Sho'r suvni qaynatib, makaronni qadoqda ko'rsatilganidan 1 daqiqa kam pishiring.@8~Makaron pishayotganda tuxumni maydalangan pishloq va qora murch bilan ko'pirtiring.~Tovada sariyog'ni eritib, ezilgan sarimsoqni 1 daqiqa qovuring va olib tashlang.@1~Makaronni sariyog'li tovaga o'tkazing, yarim piyola qaynatma suvni qoldiring.~Olovdan olib, tuxum aralashmasini quying va tez aralashtiring, qaymoqsimon bo'lguncha qoshiq-qoshiqdan suv qo'shing.~Pishloq va murch sepib, darrov torting.",
+"Boil salted water and cook the pasta 1 minute less than the pack says.@8~While it cooks, whisk the eggs with the grated cheese and black pepper.~Melt the butter in a pan, cook a crushed garlic clove for 1 minute, then remove it.@1~Move the pasta to the buttery pan, keeping half a cup of the cooking water.~Take off the heat, pour in the egg mixture and toss quickly, adding the water a spoon at a time until creamy.~Serve at once with cheese and pepper."];
+ST[18]=["Рис промойте несколько раз до прозрачной воды и залейте тёплой солёной водой на 30 минут.@30~Мясо нарежьте кусками по 3–4 см, лук полукольцами, морковь соломкой.~Разогрейте масло в казане до лёгкого дымка и обжарьте мясо 10 минут до румяной корочки.@10~Добавьте лук и жарьте 5 минут, затем морковь и жарьте ещё 7 минут.@12~Залейте кипятком на два пальца выше мяса, добавьте соль, зиру, барбарис и варите зирвак на слабом огне 30 минут.@30~Слейте воду с риса и ровным слоем выложите в казан, не перемешивая. Залейте кипятком на 1 см выше риса, сверху положите чеснок.~Варите на сильном огне до выпаривания воды, затем соберите рис горкой, проколите палочкой, накройте крышкой, убавьте огонь до минимума и томите 20 минут.@20~Перед подачей аккуратно перемешайте и подавайте с салатом ачичук.",
+"Guruchni suv tiniq bo'lguncha bir necha marta yuvib, iliq sho'r suvda 30 daqiqa ivitib qo'ying.@30~Go'shtni 3–4 sm li bo'laklarga, piyozni yarim halqa, sabzini cho'p shaklida to'g'rang.~Qozonda yog'ni engil tutay boshlaguncha qizdirib, go'shtni 10 daqiqa qizarguncha qovuring.@10~Piyoz qo'shib 5 daqiqa, so'ng sabzi qo'shib yana 7 daqiqa qovuring.@12~Go'shtdan ikki barmoq yuqori qaynoq suv quying, tuz, zira va zirk soling, zirvakni past olovda 30 daqiqa pishiring.@30~Guruchning suvini to'kib, qozonga tekis yoying, aralashtirmang. Guruchdan 1 sm yuqori qaynoq suv quyib, ustiga sarimsoqni qo'ying.~Kuchli olovda suv singguncha pishiring, so'ng guruchni uyum qilib, cho'p bilan teshib, qopqoq yoping, olovni eng pastga tushirib 20 daqiqa damlang.@20~Torttishdan oldin ehtiyotkorlik bilan aralashtiring va achchiq-chuchuk salat bilan torting.",
+"Rinse the rice until the water runs clear, then soak in warm salted water for 30 minutes.@30~Cut the meat into 3–4 cm pieces, the onion into half-rings and the carrots into matchsticks.~Heat the oil in a heavy pot until it just smokes and brown the meat for 10 minutes.@10~Add the onion and cook 5 minutes, then the carrots for another 7.@12~Pour in boiling water to two fingers above the meat, add salt, cumin and barberries, and simmer the base on low heat for 30 minutes.@30~Drain the rice and spread it evenly over the meat without stirring. Add boiling water to 1 cm above the rice and set the garlic on top.~Cook on high heat until the water is absorbed, then heap the rice, poke holes with a stick, cover, turn the heat to minimum and steam for 20 minutes.@20~Stir gently before serving, with a fresh tomato-onion salad."];
+ST[19]=["Говядину нарежьте тонкими полосками поперёк волокон, посолите и поперчите.~Растопите половину масла и обжарьте мясо на сильном огне 3–4 минуты порциями, переложите в тарелку.@4~В той же сковороде обжарьте лук 3 минуты, добавьте грибы и жарьте 7 минут, пока не испарится влага.@10~Верните мясо, влейте сливки, перемешайте и тушите на слабом огне 10 минут.@10~Подавайте с картофельным пюре, пастой или гречкой.",
+"Mol go'shtini tolalarga ko'ndalang yupqa uzun bo'laklarga to'g'rang, tuz va murch seping.~Sariyog'ning yarmini eritib, go'shtni kuchli olovda 3–4 daqiqa, qismlarga bo'lib qovuring va likopchaga oling.@4~O'sha tovada piyozni 3 daqiqa qovuring, qo'ziqorin qo'shib, namligi bug'languncha 7 daqiqa qovuring.@10~Go'shtni qaytarib, qaymoq quying, aralashtiring va past olovda 10 daqiqa dimlang.@10~Kartoshka pyuresi, makaron yoki grechka bilan torting.",
+"Slice the beef into thin strips across the grain; season with salt and pepper.~Melt half the butter and sear the beef on high heat 3–4 minutes in batches; set aside.@4~In the same pan cook the onion 3 minutes, add the mushrooms and cook 7 minutes until their liquid evaporates.@10~Return the beef, pour in the cream, stir and simmer on low heat for 10 minutes.@10~Serve with mashed potatoes, pasta or buckwheat."];
+ST[20]=["Мясо залейте 2 литрами холодной воды, доведите до кипения, снимите пену и варите на слабом огне 1 час.@60~Свёклу и морковь натрите на крупной тёрке, лук нарежьте. Обжарьте лук и морковь 5 минут, добавьте свёклу и помидоры, тушите 10 минут.@15~Картофель нарежьте кубиками, положите в бульон и варите 10 минут.@10~Добавьте нашинкованную капусту и варите ещё 10 минут.@10~Добавьте зажарку, соль и лавровый лист, варите 5 минут, выключите и дайте настояться 15 минут.@5~Подавайте со сметаной и зеленью.",
+"Go'shtni 2 litr sovuq suv bilan to'ldirib qaynating, ko'pigini oling va past olovda 1 soat pishiring.@60~Lavlagi va sabzini yirik qirg'ichdan o'tkazing, piyozni to'g'rang. Piyoz va sabzini 5 daqiqa qovuring, lavlagi va pomidorni qo'shib 10 daqiqa dimlang.@15~Kartoshkani kubik qilib sho'rvaga soling va 10 daqiqa pishiring.@10~To'g'ralgan karamni qo'shib yana 10 daqiqa pishiring.@10~Qovurmani, tuz va dafna bargini qo'shib 5 daqiqa pishiring, o'chirib, 15 daqiqa damlang.@5~Qaymoq va ko'katlar bilan torting.",
+"Cover the beef with 2 litres of cold water, bring to a boil, skim, and simmer on low heat for 1 hour.@60~Grate the beet and carrot, chop the onion. Cook the onion and carrot 5 minutes, add the beet and tomatoes and stew 10 minutes.@15~Dice the potatoes, add them to the broth and cook 10 minutes.@10~Add the shredded cabbage and cook 10 minutes more.@10~Stir in the sautéed vegetables, salt and a bay leaf; cook 5 minutes, turn off and rest 15 minutes.@5~Serve with sour cream and herbs."];
+ST[21]=["Курицу залейте 1,5 л холодной воды, доведите до кипения, снимите пену и варите 30 минут с целой луковицей.@30~Достаньте курицу и лук, мясо отделите от костей и нарежьте.~Картофель и морковь нарежьте кубиками, положите в бульон и варите 10 минут.@10~Добавьте лапшу и варите по времени на упаковке, обычно 5–7 минут.@6~Верните мясо, посолите, поперчите и подавайте с зеленью.",
+"Tovuqni 1,5 l sovuq suv bilan to'ldirib qaynating, ko'pigini oling va butun piyoz bilan 30 daqiqa pishiring.@30~Tovuq va piyozni olib, go'shtni suyagidan ajratib to'g'rang.~Kartoshka va sabzini kubik qilib, sho'rvaga soling va 10 daqiqa pishiring.@10~Lapsha qo'shib, qadoqdagi vaqt bo'yicha, odatda 5–7 daqiqa pishiring.@6~Go'shtni qaytarib, tuz va murch soling, ko'katlar bilan torting.",
+"Cover the chicken with 1.5 L of cold water, bring to a boil, skim and simmer 30 minutes with a whole onion.@30~Lift out the chicken and onion; pick the meat off the bones and chop it.~Dice the potatoes and carrots, add to the broth and cook 10 minutes.@10~Add the noodles and cook per the pack, usually 5–7 minutes.@6~Return the chicken, season with salt and pepper and serve with herbs."];
+ST[22]=["Замесите крутое тесто из муки, 200 мл воды и щепотки соли, накройте и дайте отдохнуть 30 минут.@30~Баранину и лук нарежьте мелкими кубиками (не фаршем), тыкву совсем мелко, посолите, поперчите, добавьте зиру и перемешайте с маслом.~Тесто раскатайте тонко и нарежьте квадратами примерно 10×10 см.~В центр каждого положите начинку и соедините уголки крест-накрест.~Смажьте маслом решётки мантоварки, выложите манты и готовьте на пару 45 минут.@45~Подавайте горячими со сметаной или йогуртом.",
+"Un, 200 ml suv va bir chimdim tuzdan qattiq xamir qorib, yopib 30 daqiqa dam bering.@30~Qo'y go'shti va piyozni mayda kubik qilib (qiyma emas), qovoqni juda mayda to'g'rang, tuz, murch va zira qo'shib yog' bilan aralashtiring.~Xamirni yupqa yoyib, taxminan 10×10 sm kvadratlarga kesing.~Har birining o'rtasiga qiymani qo'yib, burchaklarini xoch shaklida biriktiring.~Mantishka qatlamlariga yog' surtib, mantilarni joylang va bug'da 45 daqiqa pishiring.@45~Issiq holda qaymoq yoki yogurt bilan torting.",
+"Knead a stiff dough from the flour, 200 ml of water and a pinch of salt; cover and rest 30 minutes.@30~Cut the lamb and onion into small cubes (not minced) and the pumpkin very small; season with salt, pepper and cumin and mix with the oil.~Roll the dough thin and cut into squares about 10×10 cm.~Put filling in the centre of each and join the corners crosswise.~Oil the steamer tiers, add the manti and steam for 45 minutes.@45~Serve hot with sour cream or yogurt."];
+ST[23]=["Лук, морковь и чеснок мелко порубите, помидоры нарежьте кубиками или натрите.~Обжарьте лук и морковь 5 минут, добавьте чеснок и говяжий фарш и жарьте 8 минут до коричневого цвета.@13~Добавьте помидоры, соль, перец и орегано и тушите на слабом огне 25 минут.@25~Отварите пасту в подсоленной воде до состояния аль денте.@9~Смешайте пасту с соусом, добавьте ложку воды от варки и подавайте.",
+"Piyoz, sabzi va sarimsoqni mayda to'g'rang, pomidorni kubik qiling yoki qirg'ichdan o'tkazing.~Piyoz va sabzini 5 daqiqa qovuring, sarimsoq va mol go'shti qiymasini qo'shib, jigarrang tusga kirguncha 8 daqiqa qovuring.@13~Pomidor, tuz, murch va oregano qo'shib, past olovda 25 daqiqa dimlang.@25~Makaronni sho'r suvda al dente holatigacha pishiring.@9~Makaron va sousni aralashtirib, bir qoshiq qaynatma suv qo'shing va torting.",
+"Finely chop the onion, carrot and garlic; dice or grate the tomatoes.~Cook the onion and carrot 5 minutes, add the garlic and ground beef and brown 8 minutes.@13~Add the tomatoes, salt, pepper and oregano and simmer on low heat for 25 minutes.@25~Boil the pasta in salted water until al dente.@9~Toss the pasta with the sauce and a spoon of pasta water, then serve."];
+ST[24]=["Мясо нарежьте небольшими кусочками, овощи соломкой.~Обжарьте мясо в масле 10 минут, добавьте лук и морковь и жарьте ещё 5 минут.@15~Добавьте помидоры, перец, картофель, соль, зиру и красный перец, залейте водой так, чтобы она покрыла овощи, и тушите 30 минут.@30~Отдельно отварите лапшу до готовности и промойте горячей водой.@8~В глубокую тарелку выложите лапшу и залейте густым соусом. Посыпьте зеленью.",
+"Go'shtni kichik bo'laklarga, sabzavotlarni cho'p shaklida to'g'rang.~Go'shtni yog'da 10 daqiqa qovuring, piyoz va sabzi qo'shib yana 5 daqiqa qovuring.@15~Pomidor, qalampir, kartoshka, tuz, zira va qizil murch qo'shing, sabzavotlarni qoplaguncha suv quyib, 30 daqiqa dimlang.@30~Lapshani alohida tayyor bo'lguncha pishirib, issiq suv bilan yuving.@8~Chuqur likopchaga lapshani solib, ustiga quyuq sous quying. Ko'katlar seping.",
+"Cut the meat into small pieces and the vegetables into strips.~Brown the meat in oil 10 minutes, add the onion and carrot and cook 5 minutes more.@15~Add the tomatoes, pepper, potatoes, salt, cumin and chili, pour in water just to cover and simmer 30 minutes.@30~Boil the noodles separately until done and rinse with hot water.@8~Put the noodles in a deep bowl and ladle the thick sauce over them. Top with herbs."];
+ST[25]=["Мясо нарежьте кусками по 3 см, картофель крупно, лук и морковь кружками.~Обжарьте мясо в масле на сильном огне до корочки, 8 минут.@8~Добавьте лук и морковь и жарьте 5 минут.@5~Влейте горячую воду до половины высоты мяса, посолите, накройте и тушите на слабом огне 45 минут.@45~Добавьте картофель, при необходимости долейте воды и тушите ещё 25 минут до мягкости.@25~Посыпьте зеленью и подавайте.",
+"Go'shtni 3 sm li bo'laklarga, kartoshkani yirik, piyoz va sabzini halqa qilib to'g'rang.~Go'shtni yog'da kuchli olovda qizarguncha 8 daqiqa qovuring.@8~Piyoz va sabzi qo'shib 5 daqiqa qovuring.@5~Go'shtning yarmigacha issiq suv quying, tuz soling, qopqoq yopib past olovda 45 daqiqa dimlang.@45~Kartoshkani qo'shib, kerak bo'lsa suv qo'shib, yumshaguncha yana 25 daqiqa dimlang.@25~Ko'katlar sepib torting.",
+"Cut the beef into 3 cm pieces, the potatoes into large chunks, and the onion and carrot into rounds.~Brown the beef in oil on high heat for 8 minutes.@8~Add the onion and carrot and cook 5 minutes.@5~Pour in hot water to half the height of the meat, salt, cover and simmer on low for 45 minutes.@45~Add the potatoes (top up with water if needed) and cook 25 minutes more until tender.@25~Sprinkle with herbs and serve."];
+ST[26]=["Баранину на кости залейте 2 л холодной воды, доведите до кипения, снимите пену и варите на слабом огне 1 час.@60~Лук нарежьте полукольцами, морковь крупной соломкой, картофель большими кусками, перец и помидоры крупно.~Добавьте в бульон лук и морковь и варите 10 минут.@10~Добавьте картофель, перец, помидоры, соль, зиру и чёрный перец и варите 20 минут до мягкости овощей.@20~Подавайте горячей с кинзой или укропом.",
+"Suyakli qo'y go'shtini 2 l sovuq suv bilan to'ldirib qaynating, ko'pigini oling va past olovda 1 soat pishiring.@60~Piyozni yarim halqa, sabzini yirik cho'p, kartoshkani katta bo'laklarga, qalampir va pomidorni yirik to'g'rang.~Sho'rvaga piyoz va sabzi qo'shib 10 daqiqa pishiring.@10~Kartoshka, qalampir, pomidor, tuz, zira va qora murch qo'shib, sabzavotlar yumshaguncha 20 daqiqa pishiring.@20~Issiq holda kashnich yoki shivit bilan torting.",
+"Cover the bone-in lamb with 2 L of cold water, bring to a boil, skim and simmer on low for 1 hour.@60~Cut the onion into half-rings, the carrot into thick strips, the potatoes into big chunks, and the pepper and tomatoes coarsely.~Add the onion and carrot to the broth and cook 10 minutes.@10~Add the potatoes, pepper, tomatoes, salt, cumin and black pepper; cook 20 minutes until tender.@20~Serve hot with cilantro or dill."];
+ST[27]=["Курицу и лук пропустите через мясорубку или измельчите блендером.~Хлеб размочите в молоке или воде, отожмите и добавьте к фаршу.~Добавьте яйцо, соль и перец, хорошо вымесите и несколько раз отбейте фарш о стенку миски.~Влажными руками сформируйте котлеты.~Обжарьте на масле по 4 минуты с каждой стороны, затем накройте крышкой и доведите на слабом огне 8 минут.@16~Подавайте с гарниром или салатом.",
+"Tovuq va piyozni go'sht maydalagichdan o'tkazing yoki blenderda maydalang.~Nonni sut yoki suvda ivitib, siqib, qiymaga qo'shing.~Tuxum, tuz va murch qo'shib yaxshilab aralashtiring va qiymani bir necha marta idish devoriga urib oling.~Nam qo'l bilan kotletlar yasang.~Yog'da har tomonini 4 daqiqadan qovuring, so'ng qopqoq yopib past olovda 8 daqiqa yetkazing.@16~Garnir yoki salat bilan torting.",
+"Mince the chicken and onion in a grinder or blender.~Soak the bread in milk or water, squeeze it and add to the mince.~Add the egg, salt and pepper, mix well and slap the mixture against the bowl a few times.~Shape patties with wet hands.~Fry in oil 4 minutes per side, then cover and finish on low heat for 8 minutes.@16~Serve with a side dish or salad."];
+ST[28]=["Разогрейте духовку до 190 °C.~Картофель нарежьте очень тонкими кружками, выложите в форму и посолите.~Рыбу посолите, поперчите, сбрызните лимонным соком и положите на картофель.~Сверху разложите кусочки масла, кружки лимона и зелень.~Накройте фольгой и запекайте 25 минут.@25~Снимите фольгу и запекайте ещё 10 минут.@10~Подавайте сразу с соком из формы.",
+"Pechni 190 °C gacha qizdiring.~Kartoshkani juda yupqa halqa qilib to'g'rab, qolipga joylang va tuz seping.~Baliqqa tuz va murch seping, limon sharbati sepib, kartoshka ustiga qo'ying.~Ustiga sariyog' bo'laklari, limon halqalari va ko'katlarni joylang.~Folga bilan yopib 25 daqiqa pishiring.@25~Folgani olib yana 10 daqiqa pishiring.@10~Qolipdagi sharbat bilan darrov torting.",
+"Heat the oven to 190 °C.~Slice the potatoes very thin, lay them in a baking dish and salt them.~Season the fish with salt and pepper, sprinkle with lemon juice and set it on the potatoes.~Top with pieces of butter, lemon slices and herbs.~Cover with foil and bake 25 minutes.@25~Remove the foil and bake 10 more minutes.@10~Serve at once with the juices from the dish."];
+ST[29]=["Рис отварите до полуготовности, 8 минут, и остудите.@8~Лук мелко нарежьте и смешайте с фаршем, рисом, солью и перцем.~У перцев срежьте верхушки и удалите семена. Наполните их начинкой.~Помидоры натрите на тёрке, разведите водой и посолите: это соус.~Поставьте перцы в кастрюлю, залейте соусом и тушите под крышкой на слабом огне 40 минут.@40~Подавайте со сметаной и зеленью.",
+"Guruchni yarim tayyor bo'lguncha 8 daqiqa qaynatib, sovuting.@8~Piyozni mayda to'g'rab, qiyma, guruch, tuz va murch bilan aralashtiring.~Qalampirlarning tepasini kesib, urug'ini oling. Ularni qiyma bilan to'ldiring.~Pomidorni qirg'ichdan o'tkazing, suv bilan suyultirib tuz soling: bu sous.~Qalampirlarni qozonga qo'yib, sous quying va qopqoq ostida past olovda 40 daqiqa dimlang.@40~Qaymoq va ko'katlar bilan torting.",
+"Parboil the rice for 8 minutes and let it cool.@8~Chop the onion finely and mix with the mince, rice, salt and pepper.~Cut the tops off the peppers and remove the seeds. Fill them with the stuffing.~Grate the tomatoes, thin with water and season with salt to make the sauce.~Stand the peppers in a pot, pour in the sauce and simmer covered on low heat for 40 minutes.@40~Serve with sour cream and herbs."];
+ST[30]=["Разогрейте духовку до 220 °C.~Картофель вымойте и нарежьте крупными дольками вместе с кожурой.~Смешайте с маслом, измельчённым чесноком, солью, паприкой и перцем.~Выложите на противень в один слой кожурой вниз.~Запекайте 35–40 минут, один раз перевернув, до золотистой корочки.@38~Посыпьте зеленью и подавайте горячим.",
+"Pechni 220 °C gacha qizdiring.~Kartoshkani yuvib, po'sti bilan yirik bo'laklarga to'g'rang.~Yog', maydalangan sarimsoq, tuz, paprika va murch bilan aralashtiring.~Patnisga bir qatlamda, po'sti pastga qilib terib chiqing.~35–40 daqiqa, bir marta ag'darib, oltin rang bo'lguncha pishiring.@38~Ko'katlar sepib, issiq holda torting.",
+"Heat the oven to 220 °C.~Wash the potatoes and cut them into large wedges, skin on.~Toss with the oil, minced garlic, salt, paprika and pepper.~Spread on a tray in one layer, skin side down.~Roast 35–40 minutes, turning once, until golden.@38~Sprinkle with herbs and serve hot."];
+ST[31]=["Чечевицу промойте. Лук и морковь нарежьте мелко, помидоры кубиками.~Обжарьте лук и морковь на масле 5 минут, добавьте помидоры и зиру и жарьте 3 минуты.@8~Добавьте чечевицу и 1,2 л воды, доведите до кипения и варите на слабом огне 25 минут до мягкости.@25~Посолите, поперчите; при желании пробейте блендером до нужной густоты.~Подавайте с лимоном и зеленью.",
+"Yasmiqni yuving. Piyoz va sabzini mayda, pomidorni kubik qilib to'g'rang.~Piyoz va sabzini yog'da 5 daqiqa qovuring, pomidor va zira qo'shib 3 daqiqa qovuring.@8~Yasmiq va 1,2 l suv qo'shib qaynatib, yumshaguncha past olovda 25 daqiqa pishiring.@25~Tuz va murch soling; xohlasangiz, blenderda kerakli quyuqlikka keltiring.~Limon va ko'katlar bilan torting.",
+"Rinse the lentils. Chop the onion and carrot small and dice the tomatoes.~Cook the onion and carrot in oil 5 minutes, add the tomatoes and cumin and cook 3 minutes.@8~Add the lentils and 1.2 L of water, bring to a boil and simmer on low for 25 minutes until soft.@25~Season with salt and pepper; blend to your preferred thickness if you like.~Serve with lemon and herbs."];
+ST[32]=["Курицу нарежьте кубиками, обжарьте на масле 6–7 минут до золотистого цвета и посолите.@7~Добавьте чеснок и жарьте 1 минуту.@1~Влейте сливки, доведите до кипения и варите на слабом огне 5 минут.@5~Отварите пасту до аль денте, 9–10 минут.@9~Смешайте пасту с соусом, добавьте тёртый сыр и подавайте.",
+"Tovuqni kubik qilib to'g'rab, yog'da oltin rang bo'lguncha 6–7 daqiqa qovuring va tuz soling.@7~Sarimsoq qo'shib 1 daqiqa qovuring.@1~Qaymoq quyib, qaynatib, past olovda 5 daqiqa pishiring.@5~Makaronni al dente holatigacha 9–10 daqiqa pishiring.@9~Makaron va sousni aralashtirib, maydalangan pishloq qo'shing va torting.",
+"Dice the chicken, brown it in oil for 6–7 minutes and salt it.@7~Add the garlic and cook 1 minute.@1~Pour in the cream, bring to a boil and simmer on low for 5 minutes.@5~Boil the pasta until al dente, 9–10 minutes.@9~Toss the pasta with the sauce, add grated cheese and serve."];
+ST[33]=["Курицу нарежьте порционными кусками и посолите. Лук и морковь нарежьте мелко, рис промойте.~Обжарьте курицу в масле 8 минут до румяной корочки.@8~Добавьте лук и морковь и жарьте 5 минут.@5~Всыпьте рис, посолите, добавьте паприку и залейте горячей водой на 1,5 см выше риса.~Накройте крышкой и варите на слабом огне 20 минут, не открывая.@20~Дайте постоять 5 минут и перемешайте.@5",
+"Tovuqni porsiya bo'laklariga to'g'rab, tuz seping. Piyoz va sabzini mayda to'g'rang, guruchni yuving.~Tovuqni yog'da qizarguncha 8 daqiqa qovuring.@8~Piyoz va sabzi qo'shib 5 daqiqa qovuring.@5~Guruchni sepib, tuz va paprika qo'shing, guruchdan 1,5 sm yuqori issiq suv quying.~Qopqoq yopib, ochmasdan past olovda 20 daqiqa pishiring.@20~5 daqiqa damlab, aralashtiring.@5",
+"Cut the chicken into portions and salt it. Chop the onion and carrot small; rinse the rice.~Brown the chicken in oil for 8 minutes.@8~Add the onion and carrot and cook 5 minutes.@5~Add the rice, salt and paprika, and pour in hot water to 1.5 cm above the rice.~Cover and cook on low heat for 20 minutes without lifting the lid.@20~Rest for 5 minutes, then stir.@5"];
+ST[34]=["Достаньте мясо из холодильника за 30 минут до готовки, обсушите бумажным полотенцем, посолите и поперчите.@30~Раскалите сковороду без масла до сильного нагрева.~Жарьте стейк 4 минуты, не трогая, затем переверните и жарьте ещё 3–4 минуты (средняя прожарка для толщины около 3 см).@8~Добавьте масло, раздавленный чеснок и зелень и поливайте стейк маслом 1 минуту.@1~Дайте мясу отдохнуть 5 минут под фольгой и нарежьте поперёк волокон.@5",
+"Go'shtni pishirishdan 30 daqiqa oldin muzlatgichdan oling, qog'oz sochiq bilan quriting, tuz va murch seping.@30~Tovani yog'siz, kuchli qizdiring.~Steykni 4 daqiqa tegmasdan qovuring, so'ng ag'darib yana 3–4 daqiqa qovuring (qalinligi taxminan 3 sm bo'lganda o'rtacha pishganlik).@8~Sariyog', ezilgan sarimsoq va ko'katlarni qo'shib, steykni 1 daqiqa yog' bilan sug'oring.@1~Go'shtni folga ostida 5 daqiqa dam bering va tolalarga ko'ndalang kesing.@5",
+"Take the meat out 30 minutes before cooking, pat dry, season with salt and pepper.@30~Heat a dry pan until very hot.~Sear the steak 4 minutes without moving it, then flip and cook 3–4 more minutes (medium for about 3 cm thickness).@8~Add the butter, crushed garlic and herbs and baste the steak for 1 minute.@1~Rest 5 minutes under foil and slice across the grain.@5"];
+ST[35]=["Замесите тесто из муки, яйца, 120 мл тёплой воды и щепотки соли, дайте отдохнуть 20 минут.@20~Картофель отварите до мягкости (20 минут) и разомните в пюре с обжаренным луком и маслом.@20~Тесто раскатайте до 2 мм и вырежьте кружки стаканом.~Положите начинку и защипните края.~Варите в кипящей солёной воде 4–5 минут после всплытия.@5~Подавайте со сметаной и зеленью.",
+"Un, tuxum, 120 ml iliq suv va bir chimdim tuzdan xamir qorib, 20 daqiqa dam bering.@20~Kartoshkani yumshaguncha 20 daqiqa qaynatib, qovurilgan piyoz va sariyog' bilan pyure qiling.@20~Xamirni 2 mm qilib yoyib, stakan bilan doira kesing.~Qiymani qo'yib, chetlarini yoping.~Qaynoq sho'r suvda suzib chiqqandan keyin 4–5 daqiqa pishiring.@5~Qaymoq va ko'katlar bilan torting.",
+"Make a dough from the flour, egg, 120 ml of warm water and a pinch of salt; rest 20 minutes.@20~Boil the potatoes until soft (20 minutes) and mash with fried onion and butter.@20~Roll the dough to 2 mm and cut rounds with a glass.~Add the filling and pinch the edges shut.~Boil in salted water for 4–5 minutes after they float.@5~Serve with sour cream and herbs."];
+ST[36]=["Помидоры и огурцы нарежьте крупными кусками, перец кольцами, лук тонкими полукольцами.~Сложите овощи в миску, добавьте маслины, если есть.~Сбрызните маслом, добавьте соль и орегано.~Сверху положите крупные кубики сыра.~Подавайте сразу, не перемешивая слишком сильно.",
+"Pomidor va bodringni yirik, qalampirni halqa, piyozni yupqa yarim halqa qilib to'g'rang.~Sabzavotlarni idishga soling, bo'lsa zaytun qo'shing.~Yog' quyib, tuz va oregano seping.~Ustiga pishloqni yirik kubik qilib qo'ying.~Darrov, ortiqcha aralashtirmasdan torting.",
+"Cut the tomatoes and cucumbers into large pieces, the pepper into rings and the onion into thin half-rings.~Put the vegetables in a bowl and add olives if you have them.~Drizzle with oil and season with salt and oregano.~Top with large cubes of cheese.~Serve right away without over-mixing."];
+ST[37]=["Хлеб нарежьте кубиками, сбрызните маслом и подсушите на сковороде или в духовке при 180 °C 7 минут до хруста.@7~Курицу посолите, поперчите, обжарьте по 5–6 минут с каждой стороны и нарежьте.@11~Яйцо отварите 8 минут.@8~Листья салата порвите руками и выложите в миску.~Добавьте курицу, сухарики и яйцо, посыпьте тёртым сыром и заправьте маслом с лимонным соком.",
+"Nonni kubik qilib to'g'rab, yog' sepib, tovada yoki 180 °C pechda 7 daqiqa xirsillagunicha quriting.@7~Tovuqqa tuz va murch seping, har tomonini 5–6 daqiqadan qovuring va to'g'rang.@11~Tuxumni 8 daqiqa qaynating.@8~Salat bargini qo'l bilan yirtib, idishga soling.~Tovuq, suxarik va tuxumni qo'shing, maydalangan pishloq seping, yog' va limon sharbati bilan to'ldiring.",
+"Cube the bread, drizzle with oil and toast in a pan or in a 180 °C oven for 7 minutes until crisp.@7~Season the chicken with salt and pepper, fry 5–6 minutes per side and slice it.@11~Boil the egg for 8 minutes.@8~Tear the lettuce by hand into a bowl.~Add the chicken, croutons and egg, sprinkle with grated cheese and dress with oil and lemon juice."];
+ST[38]=["Отварите в кожуре картофель и морковь 25 минут, яйца 10 минут, курицу 20 минут. Остудите.@25~Очистите и нарежьте всё мелкими кубиками одного размера.~Огурцы нарежьте такими же кубиками, добавьте консервированную кукурузу.~Заправьте майонезом или сметаной, посолите и поперчите.~Дайте салату настояться 30 минут в холодильнике.@30",
+"Kartoshka va sabzini po'sti bilan 25 daqiqa, tuxumni 10 daqiqa, tovuqni 20 daqiqa qaynating. Sovuting.@25~Hammasini tozalab, bir xil mayda kubik qilib to'g'rang.~Bodringni ham shunday kubik qilib to'g'rab, konservalangan makkajo'xori qo'shing.~Mayonez yoki qaymoq bilan to'ldiring, tuz va murch soling.~Salatni muzlatgichda 30 daqiqa damlang.@30",
+"Boil the potatoes and carrots in their skins for 25 minutes, the eggs 10 minutes and the chicken 20 minutes. Cool.@25~Peel and cut everything into small even cubes.~Cut the cucumbers the same way and add the canned corn.~Dress with mayonnaise or sour cream, salt and pepper.~Chill in the fridge for 30 minutes.@30"];
+ST[39]=["Помидоры нарежьте дольками, огурцы полукружками, лук тонкими полукольцами.~Измельчите зелень.~Смешайте всё в миске и посолите.~Заправьте маслом и подавайте сразу, чтобы овощи не пустили много сока.",
+"Pomidorni bo'laklarga, bodringni yarim halqa, piyozni yupqa yarim halqa qilib to'g'rang.~Ko'katlarni maydalang.~Hammasini idishda aralashtirib, tuz soling.~Yog' bilan to'ldirib, sabzavotlar ko'p suv chiqarmasligi uchun darrov torting.",
+"Cut the tomatoes into wedges, the cucumbers into half-moons and the onion into thin half-rings.~Chop the herbs.~Mix everything in a bowl and add salt.~Dress with oil and serve right away so the vegetables don't release too much juice."];
+ST[40]=["Отварите свёклу в кожуре 50–60 минут, картофель и морковь 20–25 минут. Остудите.@50~Очистите и нарежьте всё кубиками.~Лук нарежьте мелко, консервированную фасоль слейте от жидкости.~Смешайте овощи, заправьте маслом и посолите. Свёклу добавляйте последней, чтобы остальное не окрасилось.",
+"Lavlagini po'sti bilan 50–60 daqiqa, kartoshka va sabzini 20–25 daqiqa qaynating. Sovuting.@50~Tozalab, hammasini kubik qilib to'g'rang.~Piyozni mayda to'g'rang, konservalangan loviyani suyuqligidan ajrating.~Sabzavotlarni aralashtirib, yog' bilan to'ldiring va tuz soling. Qolganlari bo'yalmasligi uchun lavlagini oxirida qo'shing.",
+"Boil the beet in its skin for 50–60 minutes, the potatoes and carrots 20–25 minutes. Cool.@50~Peel and dice everything.~Chop the onion finely and drain the canned beans.~Mix the vegetables, dress with oil and salt. Add the beet last so it doesn't stain the rest."];
+ST[41]=["Яйца отварите вкрутую 9 минут и остудите.@9~Огурцы нарежьте кубиками, яйца дольками, зелень мелко.~Тунец слейте от жидкости и разомните вилкой.~Смешайте всё с кукурузой, заправьте маслом, посолите и поперчите.",
+"Tuxumni 9 daqiqa qattiq qaynatib, sovuting.@9~Bodringni kubik, tuxumni bo'laklarga, ko'katlarni mayda to'g'rang.~Orqa tunetsning suyuqligini to'kib, vilka bilan ezing.~Hammasini makkajo'xori bilan aralashtirib, yog' bilan to'ldiring, tuz va murch soling.",
+"Hard-boil the eggs for 9 minutes and cool them.@9~Dice the cucumbers, cut the eggs into wedges and chop the herbs.~Drain the tuna and flake it with a fork.~Mix everything with the corn, dress with oil, salt and pepper."];
+ST[42]=["Капусту тонко нашинкуйте, посолите и слегка помните руками 1–2 минуты, чтобы она дала сок.@2~Морковь натрите на крупной тёрке, зелень измельчите.~Смешайте, заправьте маслом и соком лимона.~Дайте настояться 10 минут перед подачей.@10",
+"Karamni ingichka to'g'rab, tuz seping va sharbat chiqarishi uchun qo'l bilan 1–2 daqiqa ezib oling.@2~Sabzini yirik qirg'ichdan o'tkazib, ko'katlarni maydalang.~Aralashtirib, yog' va limon sharbati bilan to'ldiring.~Torttishdan oldin 10 daqiqa damlang.@10",
+"Shred the cabbage finely, add salt and squeeze with your hands for 1–2 minutes until it releases juice.@2~Grate the carrot coarsely and chop the herbs.~Mix and dress with oil and lemon juice.~Let it stand 10 minutes before serving.@10"];
+ST[43]=["Авокадо очистите и нарежьте кубиками, сразу сбрызните лимонным соком, чтобы не потемнел.~Помидоры и огурцы нарежьте кубиками, зелень измельчите.~Аккуратно смешайте всё в миске.~Заправьте маслом, посолите, поперчите и сразу подавайте.",
+"Avokadoni tozalab kubik qilib to'g'rang va qorayib ketmasligi uchun darrov limon sharbati seping.~Pomidor va bodringni kubik, ko'katlarni mayda to'g'rang.~Hammasini idishda ehtiyotkorlik bilan aralashtiring.~Yog' bilan to'ldirib, tuz va murch soling, darrov torting.",
+"Peel and dice the avocado and sprinkle with lemon juice right away so it doesn't darken.~Dice the tomatoes and cucumbers and chop the herbs.~Gently combine everything in a bowl.~Dress with oil, season with salt and pepper and serve at once."];
+ST[44]=["Курицу отварите в солёной воде 20 минут и остудите.@20~Яйца отварите вкрутую 9 минут.@9~Грибы и лук нарежьте и обжарьте на сковороде 8 минут до золотистого цвета, остудите.@8~Курицу и яйца нарежьте кубиками, сыр натрите.~Смешайте, заправьте йогуртом или майонезом, посолите и поперчите.",
+"Tovuqni sho'r suvda 20 daqiqa qaynatib, sovuting.@20~Tuxumni 9 daqiqa qattiq qaynating.@9~Qo'ziqorin va piyozni to'g'rab, tovada oltin rang bo'lguncha 8 daqiqa qovuring, sovuting.@8~Tovuq va tuxumni kubik qilib to'g'rang, pishloqni qirg'ichdan o'tkazing.~Aralashtirib, yogurt yoki mayonez bilan to'ldiring, tuz va murch soling.",
+"Boil the chicken in salted water for 20 minutes and cool it.@20~Hard-boil the eggs for 9 minutes.@9~Slice the mushrooms and onion and fry for 8 minutes until golden; cool.@8~Dice the chicken and eggs and grate the cheese.~Combine, dress with yogurt or mayonnaise, salt and pepper."];
+ST[45]=["Помидоры нарежьте тонкими полукружками, лук очень тонкими полукольцами, перец тонкой соломкой.~Лук посолите и помните руками, чтобы ушла горечь.~Смешайте всё с мелко нарезанной зеленью, добавьте соль и чёрный перец.~Дайте салату постоять 10 минут, чтобы появился сок, и подавайте к плову или мясу.@10",
+"Pomidorni yupqa yarim halqa, piyozni juda yupqa yarim halqa, qalampirni ingichka cho'p qilib to'g'rang.~Piyozga tuz seping va achchig'i ketishi uchun qo'l bilan ezib oling.~Hammasini mayda to'g'ralgan ko'katlar bilan aralashtirib, tuz va qora murch soling.~Sharbat chiqishi uchun salatni 10 daqiqa qoldirib, osh yoki go'sht bilan torting.@10",
+"Slice the tomatoes into thin half-rounds, the onion into very thin half-rings and the pepper into thin strips.~Salt the onion and squeeze it with your hands to remove the bitterness.~Mix everything with finely chopped herbs, salt and black pepper.~Let it stand 10 minutes until juicy and serve with plov or meat.@10"];
+ST[46]=["Свёклу отварите в кожуре 50–60 минут или запеките в фольге при 200 °C 50 минут. Остудите и очистите.@50~Натрите свёклу на крупной тёрке.~Орехи слегка подсушите на сухой сковороде 3 минуты и порубите.@3~Чеснок измельчите. Смешайте всё с маслом и солью.",
+"Lavlagini po'sti bilan 50–60 daqiqa qaynating yoki folgada 200 °C da 50 daqiqa pishiring. Sovutib, tozalang.@50~Lavlagini yirik qirg'ichdan o'tkazing.~Yong'oqni quruq tovada 3 daqiqa qizdirib, maydalang.@3~Sarimsoqni maydalang. Hammasini yog' va tuz bilan aralashtiring.",
+"Boil the beet in its skin for 50–60 minutes or roast it wrapped in foil at 200 °C for 50 minutes. Cool and peel.@50~Grate the beet coarsely.~Toast the nuts in a dry pan for 3 minutes and chop them.@3~Mince the garlic. Mix everything with oil and salt."];
+ST[47]=["Консервированную фасоль промойте и обсушите.~Лук нарежьте мелкими кубиками, помидоры кубиками, зелень измельчите.~Смешайте всё в миске.~Заправьте маслом, посолите, поперчите и дайте постоять 10 минут.@10",
+"Konservalangan loviyani yuvib, quriting.~Piyozni mayda kubik, pomidorni kubik qilib to'g'rang, ko'katlarni maydalang.~Hammasini idishda aralashtiring.~Yog' bilan to'ldirib, tuz va murch soling va 10 daqiqa qoldiring.@10",
+"Rinse and drain the canned beans.~Dice the onion small, dice the tomatoes and chop the herbs.~Combine everything in a bowl.~Dress with oil, salt and pepper and let it stand 10 minutes.@10"];
+ST[48]=["Помидоры и сыр (моцареллу) нарежьте кружками одной толщины.~Выложите на тарелку внахлёст, чередуя помидор и сыр.~Добавьте листья базилика.~Полейте маслом, посолите и поперчите перед подачей.",
+"Pomidor va pishloqni (motsarella) bir xil qalinlikdagi halqalarga to'g'rang.~Likopchaga bir-birining ustiga, pomidor va pishloqni navbatlab joylang.~Rayhon barglarini qo'shing.~Torttishdan oldin yog' quyib, tuz va murch seping.",
+"Slice the tomatoes and the cheese (mozzarella) into rounds of equal thickness.~Arrange on a plate, alternating tomato and cheese.~Add basil leaves.~Drizzle with oil and season with salt and pepper just before serving."];
+ST[49]=["Рис промойте и отварите в подсоленной воде 15 минут, промойте холодной водой и остудите.@15~Яйца отварите вкрутую 9 минут, остудите и нарежьте.@9~Огурцы нарежьте кубиками, зелень мелко.~Смешайте рис с кукурузой, огурцами, яйцами и зеленью, заправьте майонезом или йогуртом и посолите.",
+"Guruchni yuvib, sho'r suvda 15 daqiqa qaynating, sovuq suvda chayib, sovuting.@15~Tuxumni 9 daqiqa qattiq qaynatib, sovutib to'g'rang.@9~Bodringni kubik, ko'katlarni mayda to'g'rang.~Guruchni makkajo'xori, bodring, tuxum va ko'katlar bilan aralashtirib, mayonez yoki yogurt bilan to'ldiring, tuz soling.",
+"Rinse the rice and boil it in salted water for 15 minutes; rinse with cold water and cool.@15~Hard-boil the eggs for 9 minutes, cool and chop.@9~Dice the cucumbers and chop the herbs.~Mix the rice with the corn, cucumbers, eggs and herbs; dress with mayonnaise or yogurt and salt."];
+ST[50]=["Говядину нарежьте тонкими полосками, перец соломкой, лук полукольцами, огурцы полукружками.~Разогрейте масло на сильном огне и обжарьте мясо 3–4 минуты, посолите.@4~Добавьте лук и перец и жарьте 3 минуты.@3~Выложите на огурцы, полейте соевым соусом или лимонным соком и сразу подавайте.",
+"Mol go'shtini yupqa uzun bo'laklarga, qalampirni cho'p, piyozni yarim halqa, bodringni yarim doira qilib to'g'rang.~Yog'ni kuchli olovda qizdirib, go'shtni 3–4 daqiqa qovuring, tuz soling.@4~Piyoz va qalampir qo'shib 3 daqiqa qovuring.@3~Bodring ustiga solib, soya sousi yoki limon sharbati quying va darrov torting.",
+"Slice the beef into thin strips, the pepper into sticks, the onion into half-rings and the cucumbers into half-moons.~Heat the oil on high and fry the beef 3–4 minutes; salt it.@4~Add the onion and pepper and cook 3 minutes.@3~Spoon over the cucumbers, add soy sauce or lemon juice and serve immediately."];
+ST[51]=["Разогрейте духовку до 160 °C и застелите форму диаметром 20 см пергаментом.~Протрите творог через сито или пробейте блендером до гладкости.~Добавьте сливки, сахар, яйца и муку, перемешайте до однородной массы.~Вылейте массу в форму и выпекайте 50–55 минут, пока края не схватятся, а центр слегка дрожит.@52~Выключите духовку и оставьте чизкейк внутри с приоткрытой дверцей на 1 час.@60~Охладите в холодильнике минимум 4 часа, лучше на ночь.@240",
+"Pechni 160 °C gacha qizdiring va 20 sm li qolipga pergament yozing.~Tvorogni elakdan o'tkazing yoki blenderda silliqlang.~Qaymoq, shakar, tuxum va un qo'shib, bir xil massa hosil bo'lguncha aralashtiring.~Massani qolipga quyib, chetlari qotib, o'rtasi ozgina titrab turguncha 50–55 daqiqa pishiring.@52~Pechni o'chirib, chizkeykni eshigi biroz ochiq holda ichida 1 soat qoldiring.@60~Muzlatgichda kamida 4 soat, yaxshisi tunda sovuting.@240",
+"Heat the oven to 160 °C and line a 20 cm tin with parchment.~Press the cottage cheese through a sieve or blend until smooth.~Add the cream, sugar, eggs and flour and mix until uniform.~Pour into the tin and bake 50–55 minutes, until the edges are set and the centre still wobbles slightly.@52~Turn off the oven and leave the cheesecake inside with the door ajar for 1 hour.@60~Chill in the fridge at least 4 hours, ideally overnight.@240"];
+ST[52]=["Разогрейте духовку до 180 °C и застелите форму пергаментом.~Растопите шоколад с маслом на водяной бане или в микроволновке и слегка остудите.~Взбейте яйца с сахаром 3 минуты до светлой пены.@3~Влейте шоколадную массу, добавьте муку и щепотку соли, аккуратно перемешайте.~Вылейте в форму и выпекайте 22–25 минут: зубочистка в центре должна выходить с влажными крошками.@24~Полностью остудите в форме перед нарезкой.",
+"Pechni 180 °C gacha qizdiring va qolipga pergament yozing.~Shokolad va sariyog'ni suv hammomida yoki mikroto'lqinli pechda eritib, biroz sovuting.~Tuxumni shakar bilan 3 daqiqa och rangli ko'pik hosil bo'lguncha ko'pirtiring.@3~Shokolad massasini quyib, un va bir chimdim tuz qo'shing, ehtiyotkorlik bilan aralashtiring.~Qolipga quyib, 22–25 daqiqa pishiring: o'rtasiga suqilgan tish cho'pi nam uvoqlar bilan chiqishi kerak.@24~Kesishdan oldin qolipda to'liq sovuting.",
+"Heat the oven to 180 °C and line a tin with parchment.~Melt the chocolate with the butter over a water bath or in the microwave and let it cool slightly.~Whisk the eggs with the sugar for 3 minutes until pale and foamy.@3~Fold in the chocolate mixture, then the flour and a pinch of salt.~Pour into the tin and bake 22–25 minutes; a toothpick in the centre should come out with moist crumbs.@24~Cool completely in the tin before cutting."];
+ST[53]=["Холодное масло разотрите с мукой и 40 г сахара в крошку, добавьте яйцо и 2–3 ложки холодной воды и замесите тесто. Уберите в холодильник на 30 минут.@30~Яблоки очистите, нарежьте дольками и смешайте с оставшимся сахаром и корицей.~Разогрейте духовку до 190 °C.~Две трети теста раскатайте и выложите в форму с бортиками, сверху выложите яблоки.~Раскатайте остальное тесто и накройте пирог или выложите решёткой.~Выпекайте 40–45 минут до золотистого цвета.@42~Остудите 20 минут перед нарезкой.@20",
+"Sovuq sariyog'ni un va 40 g shakar bilan uvoq qilib ishqalang, tuxum va 2–3 qoshiq sovuq suv qo'shib xamir qoring. Muzlatgichga 30 daqiqaga qo'ying.@30~Olmalarni tozalab bo'laklarga to'g'rang, qolgan shakar va doljin bilan aralashtiring.~Pechni 190 °C gacha qizdiring.~Xamirning uchdan ikki qismini yoyib, bortli qolipga yoping, ustiga olmalarni soling.~Qolgan xamirni yoyib, pirogni yoping yoki to'r qilib yoying.~Oltin rang bo'lguncha 40–45 daqiqa pishiring.@42~Kesishdan oldin 20 daqiqa sovuting.@20",
+"Rub the cold butter into the flour with 40 g of the sugar until crumbly, add the egg and 2–3 spoons of cold water and knead a dough. Chill 30 minutes.@30~Peel and slice the apples and mix with the remaining sugar and cinnamon.~Heat the oven to 190 °C.~Roll out two thirds of the dough and line a tin, then add the apples.~Roll the rest and cover the pie or make a lattice.~Bake 40–45 minutes until golden.@42~Cool 20 minutes before slicing.@20"];
+ST[54]=["Замочите желатин в 3 ложках холодной воды на 10 минут.@10~Нагрейте сливки с молоком и сахаром, не доводя до кипения.~Снимите с огня, добавьте набухший желатин и размешайте до растворения.~Разлейте по стаканам или формам и охладите в холодильнике минимум 4 часа.@240~Перед подачей украсьте ягодами или ягодным соусом.",
+"Jelatinni 3 qoshiq sovuq suvda 10 daqiqa ivitib qo'ying.@10~Qaymoqni sut va shakar bilan qaynatmasdan isiting.~Olovdan olib, shishgan jelatinni qo'shing va erigunicha aralashtiring.~Stakanlar yoki qoliplarga quyib, muzlatgichda kamida 4 soat sovuting.@240~Torttishdan oldin rezavor mevalar yoki rezavor sous bilan bezang.",
+"Soak the gelatin in 3 spoons of cold water for 10 minutes.@10~Warm the cream with the milk and sugar without letting it boil.~Take off the heat, add the softened gelatin and stir until dissolved.~Pour into glasses or moulds and chill at least 4 hours.@240~Top with berries or berry sauce before serving."];
+ST[55]=["Ягоды разомните вилкой, оставив несколько целых для украшения.~Смешайте йогурт с мёдом.~В стаканы слоями выложите йогурт и ягоды.~Орехи порубите и посыпьте сверху. Охладите 15 минут и подавайте.@15",
+"Rezavor mevalarni vilka bilan ezib, bir nechtasini bezak uchun butun qoldiring.~Yogurtni asal bilan aralashtiring.~Stakanlarga yogurt va rezavor mevalarni qatlam-qatlam soling.~Yong'oqni maydalab ustiga seping. 15 daqiqa sovutib torting.@15",
+"Mash the berries with a fork, keeping a few whole for decoration.~Stir the honey into the yogurt.~Layer the yogurt and berries in glasses.~Chop the nuts and sprinkle on top. Chill 15 minutes and serve.@15"];
+ST[56]=["Разогрейте духовку до 180 °C. Мягкое масло взбейте с сахаром.~Добавьте яйцо, затем муку, хлопья и щепотку соли и замесите тесто.~Скатайте шарики размером с грецкий орех, выложите на противень с пергаментом и слегка придавите.~Выпекайте 12–14 минут до золотистых краёв.@13~Остудите на противне 5 минут: печенье затвердеет.@5",
+"Pechni 180 °C gacha qizdiring. Yumshoq sariyog'ni shakar bilan ko'pirtiring.~Tuxum, so'ng un, suli yormasi va bir chimdim tuz qo'shib xamir qoring.~Yong'oq kattaligida sharchalar yasab, pergamentli patnisga qo'ying va ozgina bosing.~Chetlari oltin rang bo'lguncha 12–14 daqiqa pishiring.@13~Patnisda 5 daqiqa sovuting: pechenye qotadi.@5",
+"Heat the oven to 180 °C. Beat the soft butter with the sugar.~Add the egg, then the flour, oats and a pinch of salt, and mix a dough.~Roll walnut-sized balls, set them on a parchment-lined tray and press lightly.~Bake 12–14 minutes until the edges are golden.@13~Cool on the tray for 5 minutes; the cookies will firm up.@5"];
+ST[57]=["Разогрейте духовку до 175 °C и смажьте маслом форму для кекса.~Бананы разомните вилкой в пюре.~Взбейте мягкое масло с сахаром, добавьте яйца по одному, затем бананы.~Добавьте муку, чайную ложку разрыхлителя и щепотку соли и перемешайте до однородности.~Вылейте в форму и выпекайте 50–55 минут, пока зубочистка не выйдет сухой.@52~Остудите 15 минут в форме, затем выньте и остудите полностью.@15",
+"Pechni 175 °C gacha qizdiring va keks qolipiga yog' surting.~Bananlarni vilka bilan ezib, pyure qiling.~Yumshoq sariyog'ni shakar bilan ko'pirtiring, tuxumlarni birin-ketin, so'ng bananlarni qo'shing.~Un, bir choy qoshiq pishiruvchi kukun va bir chimdim tuz qo'shib, bir xil bo'lguncha aralashtiring.~Qolipga quyib, tish cho'pi quruq chiqquncha 50–55 daqiqa pishiring.@52~Qolipda 15 daqiqa sovutib, so'ng olib to'liq sovuting.@15",
+"Heat the oven to 175 °C and grease a loaf tin.~Mash the bananas with a fork.~Beat the soft butter with the sugar, add the eggs one at a time, then the bananas.~Add the flour, a teaspoon of baking powder and a pinch of salt and mix until just combined.~Pour into the tin and bake 50–55 minutes, until a toothpick comes out dry.@52~Cool 15 minutes in the tin, then turn out and cool fully.@15"];
+ST[58]=["Растопите мёд с сахаром на водяной бане, добавьте щепотку соды и снимите с огня.~Быстро вмешайте яйца, всыпьте муку, замесите мягкое тесто и поделите его на 6–8 частей.~Раскатайте каждую часть в тонкий круг и выпекайте при 180 °C по 4–5 минут.@5~Сливки взбейте с сахаром в густой крем (по желанию добавьте сметану).~Промажьте коржи кремом, крошку от обрезков оставьте для посыпки.~Уберите торт в холодильник на 6–8 часов для пропитки.@360",
+"Asalni shakar bilan suv hammomida eritib, bir chimdim soda qo'shing va olovdan oling.~Tuxumni tez aralashtirib, un soling, yumshoq xamir qoring va 6–8 qismga bo'ling.~Har bir qismni yupqa doira qilib yoyib, 180 °C da 4–5 daqiqadan pishiring.@5~Qaymoqni shakar bilan quyuq krem bo'lguncha ko'pirtiring (xohlasangiz, smetana qo'shing).~Qatlamlarni krem bilan suring, qirqimlardan qolgan uvoqni sepish uchun saqlang.~Tortni 6–8 soatga muzlatgichga qo'yib shimdiring.@360",
+"Melt the honey with the sugar over a water bath, add a pinch of baking soda and take off the heat.~Mix in the eggs quickly, add the flour, knead a soft dough and divide into 6–8 pieces.~Roll each piece into a thin round and bake at 180 °C for 4–5 minutes each.@5~Whip the cream with the sugar into a thick cream (sour cream can be added).~Spread the layers with cream, saving crumbs from the trimmings to sprinkle on top.~Chill the cake 6–8 hours to soak.@360"];
+ST[59]=["Разогрейте духовку до 180 °C, формочки для маффинов смажьте или выложите бумажными капсулами.~Растопите масло и смешайте с молоком, яйцами и сахаром.~Добавьте муку, щепотку соли и чайную ложку разрыхлителя, перемешайте только до исчезновения сухой муки.~Шоколад порубите и добавьте в тесто.~Заполните формочки на две трети и выпекайте 20–22 минуты.@21~Остудите 10 минут перед подачей.@10",
+"Pechni 180 °C gacha qizdiring, maffin qoliplariga yog' surting yoki qog'oz kapsulalar qo'ying.~Sariyog'ni eritib, sut, tuxum va shakar bilan aralashtiring.~Un, bir chimdim tuz va bir choy qoshiq pishiruvchi kukun qo'shing, quruq un yo'qolguncha aralashtiring.~Shokoladni maydalab xamirga qo'shing.~Qoliplarni uchdan ikki qismigacha to'ldirib, 20–22 daqiqa pishiring.@21~Torttishdan oldin 10 daqiqa sovuting.@10",
+"Heat the oven to 180 °C and grease a muffin tin or line it with paper cases.~Melt the butter and mix with the milk, eggs and sugar.~Add the flour, a pinch of salt and a teaspoon of baking powder; stir only until the dry flour disappears.~Chop the chocolate and fold it in.~Fill the cups two-thirds full and bake 20–22 minutes.@21~Cool 10 minutes before serving.@10"];
+ST[60]=["Тыкву нарежьте кубиками, запеките при 200 °C 25 минут до мягкости и разомните в пюре.@25~Из муки, 80 г холодного масла, 20 г сахара, одного яйца и 2 ложек воды замесите тесто и охладите 30 минут.@30~Раскатайте тесто, выложите в форму, наколите вилкой и подпеките 10 минут при 180 °C.@10~Смешайте пюре с оставшимся сахаром, вторым яйцом, растопленным маслом и корицей.~Вылейте начинку на основу и выпекайте 35–40 минут.@38~Остудите перед нарезкой.",
+"Qovoqni kubik qilib to'g'rab, 200 °C da yumshaguncha 25 daqiqa pishiring va ezib pyure qiling.@25~Un, 80 g sovuq sariyog', 20 g shakar, bitta tuxum va 2 qoshiq suvdan xamir qorib, 30 daqiqa sovuting.@30~Xamirni yoyib, qolipga yoping, vilka bilan teshib, 180 °C da 10 daqiqa oldindan pishiring.@10~Pyureni qolgan shakar, ikkinchi tuxum, erigan sariyog' va doljin bilan aralashtiring.~Qiymani xamir ustiga quyib, 35–40 daqiqa pishiring.@38~Kesishdan oldin sovuting.",
+"Dice the pumpkin and roast at 200 °C for 25 minutes until soft; mash into a purée.@25~Knead a dough from the flour, 80 g cold butter, 20 g sugar, one egg and 2 spoons of water; chill 30 minutes.@30~Roll out the dough, line a tin, prick with a fork and blind-bake 10 minutes at 180 °C.@10~Mix the purée with the remaining sugar, the other egg, melted butter and cinnamon.~Pour the filling onto the base and bake 35–40 minutes.@38~Cool before slicing."];
+ST[61]=["Отделите желтки от белков (белки пригодятся для меренги) и взбейте желтки с сахаром до светлой массы.~Нагрейте молоко со сливками почти до кипения.~Тонкой струйкой влейте горячую смесь в желтки, постоянно помешивая.~Верните на слабый огонь и варите, помешивая, 5–7 минут до загустения (не кипятите).@6~Остудите, накройте плёнкой и охладите 2 часа.@120~Заморозьте в мороженице или в контейнере, перемешивая каждые 30–40 минут в течение 3 часов.@180",
+"Sarig'ini oqidan ajrating (oqidan beze uchun foydalanish mumkin) va sarig'ini shakar bilan och rangli massa bo'lguncha ko'pirtiring.~Sutni qaymoq bilan qaynash arafasigacha isiting.~Issiq aralashmani sarig'ining ustiga, doim aralashtirib, ingichka oqim bilan quying.~Past olovga qaytarib, aralashtirib, quyuqlashguncha 5–7 daqiqa pishiring (qaynatmang).@6~Sovutib, plyonka bilan yopib, 2 soat sovuting.@120~Muzqaymoq mashinasida yoki idishda, 3 soat davomida har 30–40 daqiqada aralashtirib muzlating.@180",
+"Separate the yolks from the whites (the whites are good for meringue) and whisk the yolks with the sugar until pale.~Heat the milk and cream until nearly boiling.~Pour the hot mixture into the yolks in a thin stream, stirring constantly.~Return to low heat and cook, stirring, 5–7 minutes until thickened (do not boil).@6~Cool, cover with film and chill for 2 hours.@120~Freeze in an ice-cream maker or in a container, stirring every 30–40 minutes for 3 hours.@180"];
+ST[62]=["Разогрейте духовку до 150 °C.~Нагрейте сливки почти до кипения.~Взбейте 4 желтка с 50 г сахара (без пены) и влейте горячие сливки тонкой струйкой.~Процедите, разлейте по формочкам и поставьте в глубокий противень с горячей водой до половины высоты формочек.~Запекайте 35–40 минут, пока центр слегка дрожит.@38~Остудите и охладите минимум 4 часа.@240~Перед подачей посыпьте оставшимся сахаром и карамелизуйте горелкой или под грилем духовки.",
+"Pechni 150 °C gacha qizdiring.~Qaymoqni qaynash arafasigacha isiting.~4 ta sarig'ini 50 g shakar bilan (ko'piksiz) aralashtirib, issiq qaymoqni ingichka oqim bilan quying.~Elakdan o'tkazib, qoliplarga quying va qoliplarning yarmigacha issiq suvli chuqur patnisga qo'ying.~O'rtasi ozgina titrab turguncha 35–40 daqiqa pishiring.@38~Sovutib, muzlatgichda kamida 4 soat saqlang.@240~Torttishdan oldin qolgan shakarni seping va gorelka yoki pech grili ostida karamellang.",
+"Heat the oven to 150 °C.~Heat the cream until nearly boiling.~Whisk 4 yolks with 50 g of the sugar (without making foam) and pour in the hot cream in a thin stream.~Strain into ramekins and set them in a deep tray with hot water halfway up the sides.~Bake 35–40 minutes until the centre just wobbles.@38~Cool, then chill at least 4 hours.@240~Before serving, sprinkle with the remaining sugar and caramelise with a torch or under the oven grill."];
+ST[63]=["Растопите шоколад на водяной бане и слегка остудите.~Отделите желтки от белков. Желтки по одному вмешайте в шоколад.~Сливки взбейте до мягких пиков и аккуратно вмешайте в шоколадную массу.~Белки взбейте с сахаром в плотную пену и вмешайте лопаткой снизу вверх (берите свежие яйца: в муссе сырые белки).~Разложите по бокалам и охладите минимум 3 часа.@180",
+"Shokoladni suv hammomida eritib, biroz sovuting.~Sarig'ini oqidan ajrating. Sarig'larini birin-ketin shokoladga aralashtiring.~Qaymoqni yumshoq cho'qqilargacha ko'pirtirib, shokolad massasiga ehtiyotkorlik bilan aralashtiring.~Oqlarini shakar bilan quyuq ko'pikka aylantirib, kurakcha bilan pastdan yuqoriga aralashtiring (yangi tuxum ishlating: musda xom oqlar bor).~Qadahlarga bo'lib, kamida 3 soat sovuting.@180",
+"Melt the chocolate over a water bath and cool slightly.~Separate the yolks from the whites. Stir the yolks into the chocolate one at a time.~Whip the cream to soft peaks and fold it gently into the chocolate.~Whisk the whites with the sugar to a firm foam and fold in from the bottom up (use fresh eggs: the mousse contains raw whites).~Divide among glasses and chill at least 3 hours.@180"];
+ST[64]=["Разогрейте духовку до 180 °C.~У яблок вырежьте сердцевину, не прорезая дно.~Орехи порубите и смешайте с мёдом.~Наполните яблоки начинкой и положите сверху по кусочку масла.~Запекайте 25–30 минут до мягкости.@28~Подавайте тёплыми, полив соком из формы.",
+"Pechni 180 °C gacha qizdiring.~Olmalarning o'zagini tubini kesmasdan oling.~Yong'oqni maydalab, asal bilan aralashtiring.~Olmalarni qiyma bilan to'ldirib, ustiga bir bo'lak sariyog' qo'ying.~Yumshaguncha 25–30 daqiqa pishiring.@28~Qolipdagi sharbat bilan quyib, iliq holda torting.",
+"Heat the oven to 180 °C.~Core the apples without cutting through the bottom.~Chop the nuts and mix with the honey.~Fill the apples and top each with a piece of butter.~Bake 25–30 minutes until tender.@28~Serve warm, spooning over the juices from the dish."];
+ST[65]=["Рис промойте, залейте кипятком на 5 минут и слейте воду.@5~Доведите молоко с сахаром до кипения, добавьте рис и щепотку соли.~Варите на слабом огне 30–35 минут, часто помешивая, чтобы не пригорело.@33~Добавьте масло и перемешайте.~Подавайте тёплым или холодным с корицей, вареньем или ягодами.",
+"Guruchni yuvib, qaynoq suv quyib 5 daqiqa qoldiring, suvini to'kib tashlang.@5~Sutni shakar bilan qaynatib, guruch va bir chimdim tuz soling.~Past olovda 30–35 daqiqa, kuymasligi uchun tez-tez aralashtirib pishiring.@33~Sariyog' qo'shib aralashtiring.~Iliq yoki sovuq holda doljin, murabbo yoki rezavor mevalar bilan torting.",
+"Rinse the rice, cover with boiling water for 5 minutes and drain.@5~Bring the milk with the sugar to a boil, add the rice and a pinch of salt.~Cook on low heat for 30–35 minutes, stirring often so it doesn't catch.@33~Stir in the butter.~Serve warm or cold with cinnamon, jam or berries."];
+// One embeddable YouTube recipe video per dish: VID[recipeId]='<11-char youtube id>'. IDs come from YouTube search results (top-ranked full recipe videos); embeddability is not verified.
+const VID={1:'Gy05bDNJNF8',2:'HP-PdJHZ2Hs',3:'P2xTXw8WS-w',4:'qHVgLHYMicc',5:'AfpbsM11G-g',6:'NZTxzuR66Ns',7:'-EXeyJg3moA',8:'UW3L69ZFJ40',9:'FsrxQfCzm6g',10:'hEr3GvewHWk',11:'LB3gyosRnXk',12:'KhqBZwHTbCQ',13:'qCHEyZPk-EM',14:'T7NsUwOiOT8',15:'v9A2H7lbuMs',16:'2QnIxcBShTY',17:'mr-jFmOpDSg',18:'4R1p1qm01WE',19:'aEtKLkLGEY4',20:'IE6-xDsHaSw',21:'rei-TMKfkqU',22:'hGIA5vuxdqA',
+23:'H8VT2pSW7yw',24:'A81gToerWRg',25:'MsY9Nt0rWhU',26:'4lzbG5Eakbc',27:'3SF8_Ccf0WI',28:'l2byk94sOJs',29:'UCrygabd4iM',30:'F3gbuaBomw4',31:'O2QB5WmOc7E',32:'K-VHtqih4YQ',33:'muHuvgiV_DY',34:'bwxVuCdln0s',35:'IghhfmTgf6s',36:'glLZz-8Ud2A',37:'mTWUdz9Yp1w',38:'lfDtHIM5BAw',39:'5el5wWuuG_k',40:'MVfXcD6hlAo',41:'F3M8CmTRMWI',42:'5Tf1IB4K_44',43:'RtGLcWvkH1Y',44:'HZotbqqlIZw',
+45:'eEyu1T5XLIU',46:'dAiAzHXDmm8',47:'HaZCDizuvQ8',48:'wKYoOQDB8c4',49:'Tbzkkev_jGs',50:'EJq5j7NJjQA',51:'iBaOGdL45zo',52:'7zvkNcap9Fg',53:'uuyL9nBvYjM',54:'_G58d8oP7TI',55:'v7hxnKfSWVg',56:'LRydev3XFR8',57:'slZgL2SqLvI',58:'5vi-T68mc_o',59:'SXV_f-Ekjjo',60:'sVgrvCkAPS8',61:'M1dktDpfa40',62:'2xfoJgqONl4',63:'DqoDkwtfLUg',64:'7ODRiCAf-Hg',65:'0J1I2qobjRE'};
+// ---- I18N / STATE / LOGIC ----
+const S={
+n_home:['Главная','Bosh sahifa','Home'],n_fridge:['Холодильник','Muzlatgich','Fridge'],n_search:['Поиск','Qidiruv','Search'],n_diary:['Дневник','Kundalik','Diary'],n_me:['Профиль','Profil','Profile'],
+g:['г','g','g'],min:['мин','daq','min'],kcal:['ккал','kkal','kcal'],serv:['порц.','porsiya','serv.'],per:['на порцию','bir porsiya uchun','per serving'],
+prot:['Белки','Oqsil','Protein'],fat:['Жиры','Yog\'lar','Fat'],carb:['Углеводы','Uglevodlar','Carbs'],
+back:['Назад','Orqaga','Back'],close:['Закрыть','Yopish','Close'],
+h_eye:['Умный помощник на кухне','Oshxonadagi aqlli yordamchi','Your smart kitchen helper'],
+h_t:['Что приготовим сегодня?','Bugun nima pishiramiz?','What shall we cook today?'],
+h_s:['Спросите Jesika про блюдо, время или калории — она подберёт рецепт.','Jesikadan taom, vaqt yoki kaloriya haqida so\'rang — u retsept tanlab beradi.','Ask Jesika about a dish, time or calories and she will pick a recipe.'],
+j_ai:['ИИ на базе Claude','Claude asosidagi AI','AI powered by Claude'],j_simple:['Простой режим, без ИИ','Oddiy rejim, AIsiz','Simple mode, no AI'],
+ask_ph:['Спросите Jesika…','Jesikadan so\'rang…','Ask Jesika…'],send:['Отправить','Yuborish','Send'],stop:['Стоп','To\'xtatish','Stop'],
+sug1:['Быстрый ужин','Tez kechki ovqat','Quick dinner'],sug2:['Лёгкое и недорогое','Yengil taom','Something light'],sug3:['Что из моего холодильника?','Muzlatgichimdan nima?','What from my fridge?'],sug4:['Блюдо без мяса','Go\'shtsiz taom','Meat-free dish'],
+j_hello:['Здравствуйте! Я Jesika. Напишите, что хотите приготовить, или выберите подсказку.','Salom! Men Jesikaman. Nima pishirmoqchi ekaningizni yozing yoki maslahatni tanlang.','Hello! I am Jesika. Tell me what you would like to cook or pick a suggestion.'],
+j_denied:['Доступ к ИИ не разрешён, поэтому отвечаю в простом режиме.','AIga ruxsat berilmadi, shuning uchun oddiy rejimda javob beraman.','AI access was not granted, so I am answering in simple mode.'],
+j_rate:['ИИ сейчас занят, поэтому отвечаю в простом режиме.','AI hozir band, shuning uchun oddiy rejimda javob beraman.','The AI is busy right now, so I am answering in simple mode.'],
+j_err:['ИИ не ответил, поэтому отвечаю в простом режиме.','AI javob bermadi, shuning uchun oddiy rejimda javob beraman.','The AI did not respond, so I am answering in simple mode.'],
+j_none:['Не нашла подходящих блюд. Попробуйте изменить запрос или фильтры.','Mos taom topilmadi. So\'rov yoki filtrlarni o\'zgartirib ko\'ring.','I found no matching dishes. Try changing the request or the filters.'],
+j_found:['Вот что подойдёт:','Mana mos keladiganlari:','Here is what fits:'],
+j_fridge:['Из того, что есть в холодильнике:','Muzlatgichdagi mahsulotlardan:','From what is in your fridge:'],
+j_nofridge:['Холодильник пуст. Отметьте продукты на вкладке «Холодильник», и я подберу блюда. Пока вот популярное:','Muzlatgich bo\'sh. «Muzlatgich» bo\'limida mahsulotlarni belgilang. Hozircha mashhurlari:','Your fridge is empty. Tick products on the Fridge tab and I will match dishes. For now, popular picks:'],
+j_stopped:['Остановлено.','To\'xtatildi.','Stopped.'],
+f_btn:['Фильтры','Filtrlar','Filters'],f_t:['Фильтры','Filtrlar','Filters'],f_time:['Время готовки','Pishirish vaqti','Cooking time'],f_any:['Любое','Istalgan','Any'],
+f_kcal:['Калорий на порцию','Bir porsiyada kaloriya','Calories per serving'],f_diet:['Питание','Ovqatlanish','Diet'],f_veg:['Без мяса и рыбы','Go\'sht va baliqsiz','No meat or fish'],
+f_ex:['Исключить продукты','Mahsulotlarni chiqarib tashlash','Exclude'],f_reset:['Сбросить','Tozalash','Reset'],f_show:['Показать блюда','Taomlarni ko\'rsatish','Show dishes'],f_on:['Фильтры включены','Filtrlar yoqilgan','Filters on'],
+a_egg:['Яйца','Tuxum','Eggs'],a_dairy:['Молочное','Sut mahsulotlari','Dairy'],a_gluten:['Глютен','Gluten','Gluten'],a_nuts:['Орехи','Yong\'oq','Nuts'],a_fish:['Рыба','Baliq','Fish'],a_meat:['Мясо','Go\'sht','Meat'],
+fr_t:['Мой холодильник','Mening muzlatgichim','My fridge'],fr_s:['Отметьте продукты, и я подберу блюда.','Mahsulotlarni belgilang, men taomlarni tanlayman.','Tick what you have and I will match dishes.'],
+fr_clear:['Очистить','Tozalash','Clear'],fr_res:['Можно приготовить','Pishirish mumkin','You can cook'],fr_none:['Отметьте хотя бы один продукт.','Kamida bitta mahsulotni belgilang.','Tick at least one product.'],
+fr_miss:['Не хватает','Yetishmaydi','Missing'],fr_add:['Докупить в список','Ro\'yxatga qo\'shish','Add missing to list'],fr_ask:['Спросить Jesika','Jesikadan so\'rash','Ask Jesika'],fr_q:['Что приготовить из моих продуктов?','Mahsulotlarimdan nima pishirsam bo\'ladi?','What can I cook from my products?'],fr_full:['Всё есть','Hammasi bor','You have it all'],
+s_t:['Поиск','Qidiruv','Search'],s_ph:['Блюдо или продукт','Taom yoki mahsulot','Dish or ingredient'],s_none:['Ничего не найдено.','Hech narsa topilmadi.','Nothing found.'],s_hint:['Попробуйте: курица, плов, десерт.','Sinab ko\'ring: tovuq, osh, desert.','Try: chicken, plov, dessert.'],
+d_t:['Дневник питания','Ovqatlanish kundaligi','Food diary'],d_goal:['Цель','Maqsad','Goal'],d_eaten:['Съедено','Iste\'mol qilindi','Eaten'],d_left:['Осталось','Qoldi','Left'],d_over:['Сверх нормы','Me\'yordan ortiq','Over goal'],
+d_add:['Добавить блюдо','Taom qo\'shish','Add a dish'],d_empty:['В этот день записей нет.','Bu kunda yozuv yo\'q.','Nothing logged for this day.'],d_today:['Сегодня','Bugun','Today'],d_pick:['Выберите блюдо','Taomni tanlang','Pick a dish'],d_added:['Добавлено в дневник','Kundalikka qo\'shildi','Added to diary'],d_open:['Открыть дневник','Kundalikni ochish','Open diary'],d_portions:['порции','porsiya','portions'],
+p_t:['Профиль','Profil','Profile'],p_fav:['Избранное','Sevimlilar','Favourites'],p_logged:['Дней в дневнике','Kundalikdagi kunlar','Days logged'],p_cart:['В списке','Ro\'yxatda','On list'],p_lang:['Язык','Til','Language'],p_theme:['Тема','Mavzu','Theme'],p_goal:['Цель по калориям в день','Kunlik kaloriya maqsadi','Daily calorie goal'],
+th_light:['Светлая','Yorug\'','Light'],th_warm:['Тёплая','Iliq','Warm'],th_black:['Чёрная','Qora','Black'],
+p_sync:['Аккаунт и синхронизация','Hisob va sinxronlash','Account and sync'],
+sy_off:['Данные хранятся только в этом браузере. Чтобы они появлялись на всех устройствах, откройте приложение в Claude под своей учётной записью.','Ma\'lumotlar faqat shu brauzerda saqlanadi. Barcha qurilmalarda ko\'rinishi uchun ilovani Claude ichida o\'z hisobingiz bilan oching.','Data is kept in this browser only. To see it on every device, open the app inside Claude with your account.'],
+sy_ok:['Синхронизировано с вашим аккаунтом','Hisobingiz bilan sinxronlandi','Synced with your account'],sy_sync:['Синхронизация…','Sinxronlanmoqda…','Syncing…'],sy_err:['Не удалось синхронизировать. Данные сохранены на устройстве.','Sinxronlab bo\'lmadi. Ma\'lumotlar qurilmada saqlandi.','Could not sync. Data is saved on this device.'],
+p_ai:['Помощник Jesika','Jesika yordamchisi','Jesika assistant'],ai_on:['ИИ подключён. Первый вопрос попросит разрешение.','AI ulangan. Birinchi savol ruxsat so\'raydi.','AI is connected. The first question asks for permission.'],ai_off:['ИИ здесь недоступен. Работает простой подбор по правилам.','AI bu yerda mavjud emas. Oddiy qoidalar bo\'yicha tanlash ishlaydi.','AI is not available here. Simple rule-based matching is used.'],ai_den:['Доступ к ИИ не разрешён. Работает простой режим.','AIga ruxsat berilmadi. Oddiy rejim ishlaydi.','AI access was declined. Simple mode is used.'],
+p_note:['КБЖУ рассчитано по составу блюд и является ориентиром, а не лабораторным анализом. Перевод на узбекский рабочий, его стоит проверить носителю языка.','KBJU taom tarkibidan hisoblangan va laboratoriya tahlili emas, yo\'l-yo\'riq. O\'zbekcha tarjima ishchi variant, ona tilida so\'zlashuvchi tekshirib chiqsa yaxshi.','Nutrition values are calculated from ingredients and are a guide, not a lab result. The Uzbek translation is a working draft and should be checked by a native speaker.'],
+r_cook:['Готовить сейчас','Hozir pishirish','Cook now'],r_video:['Видео-рецепт','Video-retsept','Video recipe'],r_vplay:['Смотреть видео','Videoni ko\'rish','Watch video'],r_vfail:['Не воспроизводится? Открыть на YouTube','Ijro etilmayaptimi? YouTube\'da ochish','Not playing? Open on YouTube'],r_vopen:['Смотреть на YouTube','YouTube\'da ko\'rish','Watch on YouTube'],r_vwhy:['Внутри Claude встроенные видео не показываются, ролик откроется в новой вкладке. На обычном сайте он играет прямо в рецепте.','Claude ichida o\'rnatilgan videolar ko\'rinmaydi, video yangi oynada ochiladi. Oddiy saytda u retseptning o\'zida o\'ynaydi.','Embedded videos are not shown inside Claude, so the video opens in a new tab. On a regular website it plays right in the recipe.'],r_vlang:['Видео на русском языке','Video rus tilida','Video is in Russian'],r_servings:['Порции','Porsiyalar','Servings'],r_ing:['Ингредиенты','Masalliqlar','Ingredients'],r_steps:['Приготовление','Tayyorlash','Method'],
+r_shop:['В список покупок','Xaridlar ro\'yxatiga','Add to shopping list'],r_shopmiss:['Только недостающее','Faqat yetishmaydigani','Only what is missing'],r_diary:['Записать в дневник','Kundalikka yozish','Log in diary'],
+r_photo:['Добавить своё фото','O\'z rasmingizni qo\'shish','Add your photo'],r_photo2:['Заменить фото','Rasmni almashtirish','Replace photo'],r_photodel:['Удалить фото','Rasmni o\'chirish','Remove photo'],r_photo_ok:['Фото сохранено','Rasm saqlandi','Photo saved'],r_photo_err:['Не удалось обработать фото','Rasmni qayta ishlab bo\'lmadi','Could not process the photo'],
+r_fav:['В избранное','Sevimlilarga','Favourite'],r_time:['Время','Vaqt','Time'],r_rate:['Рейтинг','Reyting','Rating'],r_added:['Добавлено в список покупок','Xaridlar ro\'yxatiga qo\'shildi','Added to the shopping list'],r_nomiss:['Всё уже есть в холодильнике','Hammasi muzlatgichda bor','You already have everything'],r_tags:['Содержит','Tarkibida','Contains'],
+c_step:['Шаг','Qadam','Step'],c_of:['из','/','of'],c_prev:['Назад','Orqaga','Back'],c_next:['Далее','Keyingi','Next'],c_finish:['Готово','Tayyor','Finish'],c_start:['Запустить таймер','Taymerni yoqish','Start timer'],c_stop:['Остановить','To\'xtatish','Stop'],c_ing:['Ингредиенты','Masalliqlar','Ingredients'],
+c_awake:['Экран не погаснет','Ekran o\'chmaydi','Screen stays on'],c_noawake:['Не удалось удержать экран. Отключите автоблокировку','Ekranni ushlab bo\'lmadi. Avtobloklashni o\'chiring','Could not keep the screen on. Turn off auto-lock'],
+c_end_t:['Приятного аппетита!','Yoqimli ishtaha!','Enjoy your meal!'],c_end_s:['Блюдо готово. Записать в дневник?','Taom tayyor. Kundalikka yozaymi?','The dish is ready. Log it in the diary?'],c_tdone:['Время вышло','Vaqt tugadi','Time is up'],
+sh_t:['Список покупок','Xaridlar ro\'yxati','Shopping list'],sh_empty:['Список пуст. Добавьте продукты из рецепта или вручную.','Ro\'yxat bo\'sh. Retseptdan yoki qo\'lda qo\'shing.','The list is empty. Add from a recipe or by hand.'],sh_ph:['Например, хлеб','Masalan, non','For example, bread'],sh_add:['Добавить','Qo\'shish','Add'],
+sh_copy:['Скопировать список','Ro\'yxatdan nusxa olish','Copy the list'],sh_copied:['Список скопирован','Ro\'yxat nusxalandi','List copied'],sh_fridge:['Купленное в холодильник','Sotib olinganni muzlatgichga','Bought to fridge'],sh_clearb:['Убрать купленное','Sotib olinganni olib tashlash','Remove bought'],sh_clear:['Очистить всё','Hammasini tozalash','Clear all'],sh_moved:['Перенесено в холодильник','Muzlatgichga ko\'chirildi','Moved to the fridge']
+};
+const LI=['ru','uz','en'],SKINS=['light','warm','black'];
+const KEY='foodspace-ai-v2',PKEY='foodspace-photos-v2';
+const STORY={all:16,b:10,h:18,s:36,d:51};
+const WD=[['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],['Du','Se','Ch','Pa','Ju','Sh','Ya'],['Mon','Tue','Wed','Thu','Fri','Sat','Sun']];
+const MO=[['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'],['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']];
+const UNIT={g:['г','g','g'],ml:['мл','ml','ml'],pcs:['шт','dona','pcs']};
+const PERSIST=['l','skin','goal','fav','logs','shop','fridge','f'];
+
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const fromISO=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=fromISO(s);d.setDate(d.getDate()+n);return iso(d)};
+const weekDays=s=>{const d=fromISO(s),w=(d.getDay()+6)%7;const m=addDays(s,-w);return [0,1,2,3,4,5,6].map(i=>addDays(m,i))};
+
+const st={l:0,skin:'light',tab:'home',cat:'all',q:'',fridge:{},goal:2000,fav:{},logs:{},shop:[],
+ f:{time:0,kcal:0,veg:0,ex:{}},sel:iso(new Date()),chat:[],busy:false,open:0,sv:0,cook:null,shopOpen:0,modal:null,timers:[],photos:{},sync:'off',wl:'',ing:0,vplay:0};
+const CL={sample:null,db:null,uid:null,denied:false};
+
+const $=(s,e)=>(e||document).querySelector(s);
+const t=k=>{const v=S[k];return v?v[st.l]:k};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId=id=>REC.find(r=>r.id===id);
+const rname=r=>r.n[st.l];
+const iname=k=>ING[k][st.l];
+const today=()=>iso(new Date());
+
+const IC={
+home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+fridge:'<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M5 10h14M9 6v1M9 14v3"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+cart:'<path d="M3 4h2l2.5 11h10l2-8H6.5"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/>',
+bookmark:'<path d="M6 3h12v18l-6-4-6 4z"/>',
+back:'<path d="M15 5l-7 7 7 7"/>',next:'<path d="M9 5l7 7-7 7"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+flame:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>',
+check:'<path d="M5 12.5l4.5 4.5L19 7"/>',play:'<path d="M8 5l11 7-11 7z"/>',
+timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>',
+camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+send:'<path d="M4 12l16-8-6 17-3-7z"/>',filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+star:'<path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.3l1.1-6.2L3 9.7l6.2-.9z"/>',
+spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+cloud:'<path d="M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 9.5 4 4 0 0 1 17.5 18z"/>'
+};
+const ic=(n,c)=>`<svg class="i${c?' '+c:''}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||''}</svg>`;
+
+// ---- persistence ----
+function clean(o){
+ const r={};if(!o||typeof o!=='object')return r;
+ if([0,1,2].includes(o.l))r.l=o.l;
+ if(SKINS.includes(o.skin))r.skin=o.skin;
+ if(typeof o.goal==='number'&&o.goal>=800&&o.goal<=6000)r.goal=Math.round(o.goal);
+ if(o.fav&&typeof o.fav==='object'){r.fav={};Object.keys(o.fav).forEach(k=>{if(byId(+k)&&o.fav[k])r.fav[k]=1})}
+ if(o.logs&&typeof o.logs==='object'){r.logs={};Object.keys(o.logs).forEach(d=>{if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&Array.isArray(o.logs[d])){const a=o.logs[d].filter(e=>e&&byId(+e.id)&&e.n>0&&e.n<=20).map(e=>({id:+e.id,n:+e.n}));if(a.length)r.logs[d]=a}})}
+ if(Array.isArray(o.shop))r.shop=o.shop.filter(e=>e&&(e.k&&ING[e.k]&&e.a>0||typeof e.x==='string'&&e.x)).slice(0,200).map(e=>e.k?{k:e.k,a:+e.a,d:e.d?1:0}:{x:String(e.x).slice(0,80),d:e.d?1:0});
+ if(o.fridge&&typeof o.fridge==='object'){r.fridge={};Object.keys(o.fridge).forEach(k=>{if(ING[k]&&o.fridge[k]>0)r.fridge[k]=Math.min(9,Math.round(o.fridge[k]))})}
+ if(o.f&&typeof o.f==='object'){const f={time:[0,15,30,60].includes(o.f.time)?o.f.time:0,kcal:[0,300,450,600].includes(o.f.kcal)?o.f.kcal:0,veg:o.f.veg?1:0,ex:{}};['egg','dairy','gluten','nuts','fish'].forEach(k=>{if(o.f.ex&&o.f.ex[k])f.ex[k]=1});r.f=f}
+ r.ts=typeof o.ts==='number'?o.ts:0;
+ return r;
+}
+function snap(){const o={};PERSIST.forEach(k=>o[k]=st[k]);o.ts=st.ts||Date.now();return JSON.parse(JSON.stringify(o))}
+function adopt(o){const c=clean(o);PERSIST.forEach(k=>{if(c[k]!==undefined)st[k]=c[k]});st.ts=c.ts||0}
+function save(){st.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(snap()))}catch(e){}queueRemote()}
+function savePhotos(){try{localStorage.setItem(PKEY,JSON.stringify(st.photos));return true}catch(e){return false}}
+function loadLocal(){
+ try{const a=localStorage.getItem(KEY);if(a)adopt(JSON.parse(a))}catch(e){}
+ try{const p=JSON.parse(localStorage.getItem(PKEY)||'{}');Object.keys(p).forEach(k=>{if(byId(+k)&&/^data:image\/jpeg;base64,/.test(p[k])){st.photos[k]=p[k];IMG[k]=p[k]}})}catch(e){}
+}
+
+// ---- remote sync (Claude artifact db + user); everything guarded ----
+let rq=0,rbusy=false,rdirty=false;const rph=new Set();
+function setSync(s){st.sync=s;const e=$('#syncTxt');if(e)e.textContent=syncText()}
+function syncText(){return st.sync==='ok'?t('sy_ok'):st.sync==='sync'?t('sy_sync'):st.sync==='err'?t('sy_err'):t('sy_off')}
+function queueRemote(){if(!CL.db)return;clearTimeout(rq);rq=setTimeout(flushRemote,1500)}
+async function flushRemote(){
+ if(!CL.db)return;if(rbusy){rdirty=true;return}
+ rbusy=true;setSync('sync');
+ try{
+  const col=CL.db.collection('data/users/'+CL.uid);
+  await col.doc('state').set(snap());
+  for(const id of [...rph]){rph.delete(id);const d=col.doc('photo_'+id);if(st.photos[id])await d.set({d:st.photos[id]});else await d.delete()}
+  setSync('ok');
+ }catch(e){setSync('err')}
+ rbusy=false;if(rdirty){rdirty=false;queueRemote()}
+}
+async function pull(){
+ try{
+  setSync('sync');
+  const col=CL.db.collection('data/users/'+CL.uid);
+  const qs=await col.get();let remote=null;
+  qs.docs.forEach(d=>{
+   if(d.id==='state')remote=d.data();
+   else if(d.id.indexOf('photo_')===0){const id=d.id.slice(6),v=d.data()&&d.data().d;if(byId(+id)&&typeof v==='string'&&/^data:image\/jpeg;base64,/.test(v)){st.photos[id]=v;IMG[id]=v}}
+  });
+  savePhotos();
+  const rc=clean(remote);
+  if(remote&&rc.ts>(st.ts||0)){adopt(remote);try{localStorage.setItem(KEY,JSON.stringify(snap()))}catch(e){}}
+  else await flushRemote();
+  setSync('ok');render();
+ }catch(e){setSync('err')}
+}
+async function initCaps(){
+ try{
+  if(!window.claude||typeof claude.use!=='function')return;
+  const [s,d,u]=await Promise.all([claude.use('sample').catch(()=>null),claude.use('db').catch(()=>null),claude.use('user').catch(()=>null)]);
+  CL.sample=s||null;
+  if(d&&u&&typeof u.id==='function'){const id=await u.id();if(id){CL.db=d;CL.uid=String(id)}}
+ }catch(e){}
+ render();
+ if(CL.db)pull();
+}
+
+// ---- filters, search, ranking ----
+function okR(r){const f=st.f;if(f.time&&r.min>f.time)return false;if(f.kcal&&r.kcal>f.kcal)return false;if(f.veg&&(r.tags.meat||r.tags.fish))return false;for(const k in f.ex)if(f.ex[k]&&r.tags[k])return false;return true}
+const filtersOn=()=>!!(st.f.time||st.f.kcal||st.f.veg||Object.keys(st.f.ex).length);
+const fridgeKeys=()=>Object.keys(st.fridge).filter(k=>st.fridge[k]>0);
+function rank(){
+ const have=new Set(fridgeKeys());if(!have.size)return [];
+ return REC.filter(okR).map(r=>{const miss=r.ing.filter(x=>!have.has(x[0])).map(x=>x[0]);return {r,miss,score:(r.ing.length-miss.length)/r.ing.length}}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.miss.length-b.miss.length||a.r.min-b.r.min);
+}
+function matchR(r,term){
+ term=term.toLowerCase();if(term.length<2)return true;
+ if(r.n.some(n=>n.toLowerCase().includes(term)))return true;
+ if(term.length<4)return false;
+ return r.ing.some(x=>{const nm=ING[x[0]];if(nm.slice(0,3).some(n=>n.toLowerCase().includes(term)))return true;return nm[5].split('|').some(s=>s&&(term.includes(s)||s.includes(term)))});
+}
+function searchR(q){const w=q.trim().split(/\s+/).filter(Boolean);return REC.filter(okR).filter(r=>w.every(x=>matchR(r,x)))}
+
+// ---- quantities and servings ----
+function fmtN(v){return String(v).replace('.',',')}
+function fmtQty(k,a){
+ const u=ING[k][4];
+ if(u==='pcs'){const v=Math.max(.5,Math.round(a*2)/2);const w=Math.floor(v),h=v-w;const s=h?(w?w+'½':'½'):String(w);return s+' '+UNIT.pcs[st.l]}
+ if(a>=1000)return fmtN(Math.round(a/100)/10)+' '+(u==='ml'?['л','l','L'][st.l]:['кг','kg','kg'][st.l]);
+ const v=a<20?Math.max(1,Math.round(a)):Math.round(a/5)*5;
+ return v+' '+UNIT[u][st.l];
+}
+const curSv=r=>st.sv||r.serv;
+const factor=r=>curSv(r)/r.serv;
+
+// ---- shopping list ----
+const shopCount=()=>st.shop.filter(x=>!x.d).length;
+function shopAdd(items){
+ items.forEach(([k,a])=>{const e=st.shop.find(x=>x.k===k&&!x.d);if(e)e.a+=a;else st.shop.push({k,a,d:0})});
+ save();
+}
+function shopFromRecipe(r,onlyMissing){
+ const f=factor(r),have=new Set(fridgeKeys());
+ const items=r.ing.filter(x=>!onlyMissing||!have.has(x[0])).map(x=>[x[0],x[1]*f]);
+ if(!items.length)return 0;shopAdd(items);return items.length;
+}
+const shopLine=e=>e.k?iname(e.k)+' — '+fmtQty(e.k,e.a):e.x;
+async function copyText(s){
+ try{await navigator.clipboard.writeText(s);return true}catch(e){}
+ try{const a=document.createElement('textarea');a.value=s;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok}catch(e){return false}
+}
+
+// ---- diary ----
+function dayLog(d){return st.logs[d]||[]}
+function logAdd(d,id,n){const a=st.logs[d]||(st.logs[d]=[]);const e=a.find(x=>x.id===id);if(e)e.n=Math.min(20,e.n+n);else a.push({id,n});save()}
+function logSet(d,id,n){const a=st.logs[d]||[];const e=a.find(x=>x.id===id);if(!e)return;e.n=Math.round(n*2)/2;if(e.n<=0){st.logs[d]=a.filter(x=>x!==e);if(!st.logs[d].length)delete st.logs[d]}save()}
+function dayTot(d){let k=0,p=0,f=0,c=0;dayLog(d).forEach(e=>{const r=byId(e.id);k+=r.kcal*e.n;p+=r.P*e.n;f+=r.F*e.n;c+=r.C*e.n});return {k:Math.round(k),p:Math.round(p),f:Math.round(f),c:Math.round(c)}}
+function dlabel(d){const x=fromISO(d);return x.getDate()+' '+MO[st.l][x.getMonth()]}
+
+// ---- steps ----
+function stepsFor(r){const s=(ST[r.id]||[])[st.l]||'';return s.split('~').filter(x=>x.trim()).map(x=>{const m=x.match(/@(\d+)\s*$/);return {t:(m?x.slice(0,m.index):x).trim(),m:m?+m[1]:0}})}
+
+// ---- timers, sound, wake lock ----
+let AC=null,tmId=0,tmInt=0;
+function beep(){
+ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
+  [0,.35,.7].forEach(o=>{const os=AC.createOscillator(),g=AC.createGain();os.frequency.value=880;os.connect(g);g.connect(AC.destination);const T=AC.currentTime+o;g.gain.setValueAtTime(.0001,T);g.gain.exponentialRampToValueAtTime(.35,T+.02);g.gain.exponentialRampToValueAtTime(.0001,T+.28);os.start(T);os.stop(T+.3)});
+ }catch(e){}
+ try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+}
+function tmStart(key,label,min){
+ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}
+ st.timers=st.timers.filter(x=>x.key!==key);
+ st.timers.push({id:++tmId,key,label,end:Date.now()+min*60000,done:0});
+ if(!tmInt)tmInt=setInterval(tmTick,1000);
+ tmTick();
+}
+function tmStop(key){st.timers=st.timers.filter(x=>x.key!==key);tmTick()}
+const tmFmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function tmTick(){
+ let fired=0;
+ st.timers.forEach(x=>{if(!x.done&&Date.now()>=x.end){x.done=1;fired++}});
+ if(fired){beep();toast(t('c_tdone')+': '+st.timers.filter(x=>x.done).map(x=>x.label).slice(-1))}
+ if(!st.timers.length&&tmInt){clearInterval(tmInt);tmInt=0}
+ paintTimers();
+}
+let WL=null;
+async function wake(on){
+ try{
+  if(on){
+   if(!('wakeLock' in navigator)){st.wl='na';paintWake();return}
+   if(!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}
+   st.wl='on';
+  }else{if(WL){await WL.release()}WL=null;st.wl=''}
+ }catch(e){st.wl=on?'na':''}
+ paintWake();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&st.cook)wake(true)});
+
+// ---- Jesika ----
+function filterText(){const a=[];if(st.f.time)a.push('max '+st.f.time+' min');if(st.f.kcal)a.push('max '+st.f.kcal+' kcal per serving');if(st.f.veg)a.push('no meat or fish');Object.keys(st.f.ex).forEach(k=>a.push('no '+k));return a.join(', ')||'none'}
+function catalog(){return REC.map(r=>[r.id,rname(r),r.cat,r.min,r.kcal,Object.keys(r.tags).join('+')||'-'].join('|')).join('\n')}
+function strip(x){return String(x).replace(/\s*\[#\d+\]/g,'').replace(/\*\*/g,'').trim()}
+function idsOf(x){const o=[];String(x).replace(/\[#(\d+)\]/g,(m,i)=>{i=+i;if(byId(i)&&!o.includes(i))o.push(i)});return o.slice(0,4)}
+function buildMsgs(){
+ const lang=['Russian','Uzbek (Latin script)','English'][st.l];
+ const fr=fridgeKeys().map(k=>ING[k][2]).join(', ')||'(empty)';
+ const sys='You are Jesika, a warm and concise home-cooking assistant inside the Food Space AI recipe app. Readers are adults aged 40-60. Reply in '+lang+'. Maximum 110 words, plain text, no markdown and no lists. To recommend dishes pick ONLY from the catalog below and write the id as [#id] right after the dish name; recommend at most 4. If asked about something other than cooking or food, politely steer back. Nutrition numbers are approximate; give no medical advice.\nUser fridge: '+fr+'\nActive filters: '+filterText()+'\nToday: '+dayTot(today()).k+' of '+st.goal+' kcal\nCatalog (id|name|category b=breakfast h=main s=salad d=dessert|minutes|kcal per serving|contains):\n'+catalog();
+ let h=st.chat.filter(m=>!m.live&&m.x).slice(-9).map(m=>({role:m.r==='u'?'user':'assistant',content:m.r==='u'?m.x:m.raw||m.x}));
+ while(h.length&&h[0].role!=='user')h.shift();
+ h[0]={role:'user',content:sys+'\n\n---\n'+h[0].content};
+ return h;
+}
+function jesika(q){
+ const s=q.toLowerCase(),has=re=>re.test(s);let list=REC.filter(okR);let flag=false;
+ if(has(/завтрак|nonushta|breakfast/)){list=list.filter(r=>r.cat==='b');flag=true}
+ if(has(/десерт|сладк|desert|shirin|dessert|sweet/)){list=list.filter(r=>r.cat==='d');flag=true}
+ if(has(/салат|salat/)){list=list.filter(r=>r.cat==='s');flag=true}
+ if(has(/ужин|обед|горяч|kechki|tushlik|issiq|dinner|lunch|main/)){list=list.filter(r=>r.cat==='h');flag=true}
+ if(has(/быстр|скор|tez|quick|fast/)){list=list.filter(r=>r.min<=20);flag=true}
+ if(has(/лёгк|легк|диет|похуд|yengil|parhez|light|diet|low.?cal/)){list=list.filter(r=>r.kcal<=300);flag=true}
+ if(has(/без мяса|вегет|go'shtsiz|vegetar|meat.?free|meatless/)){list=list.filter(r=>!r.tags.meat&&!r.tags.fish);flag=true}
+ if(has(/белк|oqsil|protein/)){list=list.slice().sort((a,b)=>b.P-a.P);flag=true}
+ let intro=t('j_found');
+ if(has(/холодил|muzlatg|fridge|мои продукт|my product|mahsulotlarim/)){
+  const rk=rank();if(!rk.length){list=REC.filter(okR).sort((a,b)=>b.rate-a.rate);intro=t('j_nofridge')}else{list=rk.map(x=>x.r);intro=t('j_fridge')}flag=true;
+ }
+ if(!flag||list.length>6){
+  const terms=s.split(/[^\p{L}']+/u).filter(w=>w.length>=3);
+  const m=terms.length?list.filter(r=>terms.some(w=>matchR(r,w))):[];
+  if(m.length)list=m;else if(!flag)list=list.slice().sort((a,b)=>b.rate-a.rate||a.min-b.min);
+ }
+ const ids=list.slice(0,4).map(r=>r.id);
+ return {x:ids.length?intro:t('j_none'),ids};
+}
+async function ask(text){
+ text=String(text||'').trim();if(!text||st.busy)return;
+ st.chat.push({r:'u',x:text});
+ const m={r:'a',x:'',ids:[],live:true,note:''};st.chat.push(m);st.busy=true;st.ac=new AbortController();paintChat();
+ let ok=false;
+ if(CL.sample&&!CL.denied){
+  try{
+   const res=await CL.sample(buildMsgs(),{modelTier:'quick',cache:false,signal:st.ac.signal,onText:u=>{m.x=strip(u.text);m.raw=u.text;paintChat()}});
+   m.raw=res.text;m.x=strip(res.text);m.ids=idsOf(res.text);ok=!!m.x;
+  }catch(e){
+   const c=e&&e.code;
+   if(c==='cancelled'||c==='aborted'||(e&&e.name==='AbortError')){m.ids=idsOf(m.raw||'');if(!m.x)m.x=t('j_stopped');ok=true}
+   else{m.note=c==='not_granted'?t('j_denied'):c==='rate_limited'?t('j_rate'):t('j_err');if(c==='not_granted')CL.denied=true;if(e&&e.text&&e.text.length>40){m.x=strip(e.text);m.raw=e.text;m.ids=idsOf(e.text);ok=true;m.note=''}}
+  }
+ }
+ if(!ok){const j=jesika(text);m.x=j.x;m.ids=j.ids}
+ m.live=false;st.busy=false;st.ac=null;paintChat();
+}
+// ---- DISH ILLUSTRATIONS: one hand-composed top-down plate per dish (no emoji) ----
+function rng(seed){let a=(seed*2654435761)>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+const IMG={}; // optional real photos: IMG[recipeId]='data:image/jpeg;base64,...'
+const f1=n=>(+n).toFixed(1);
+const rot=(x,y,d)=>d?` transform="rotate(${Math.round(d)} ${f1(x)} ${f1(y)})"`:'';
+const C=(x,y,r,f,o)=>`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${f}"${o?` opacity="${o}"`:''}/>`;
+const E=(x,y,rx,ry,f,d)=>`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(rx)}" ry="${f1(ry)}" fill="${f}"${rot(x,y,d)}/>`;
+const RC=(x,y,w,h,rx,f,d)=>`<rect x="${f1(x-w/2)}" y="${f1(y-h/2)}" width="${f1(w)}" height="${f1(h)}" rx="${rx}" fill="${f}"${rot(x,y,d)}/>`;
+const LN=(x1,y1,x2,y2,c,w)=>`<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const RING=(x,y,r,c,w)=>`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+const sca=(R,cx,cy,n,r,fn)=>{let s='';for(let i=0;i<n;i++){const a=R()*6.2832,d=Math.sqrt(R())*r;s+=fn(cx+Math.cos(a)*d,cy+Math.sin(a)*d,R)}return s};
+const sc=(R,n,r,fn)=>sca(R,50,38,n,r,fn);
+const pick=(R,a)=>a[Math.floor(R()*a.length)];
+const lat=(r,c,w,step)=>{let s='<g transform="rotate(45 50 38)">';for(let u=-r+3;u<=r-3;u+=step){const h=Math.sqrt(r*r-u*u)-1.5;s+=LN(50+u,38-h,50+u,38+h,c,w)+LN(50-h,38+u,50+h,38+u,c,w)}return s+'</g>'};
+const HERB=(R,n)=>sc(R,n,17,(x,y)=>E(x,y,2.2,1,'#3E8E41',R()*180));
+const SI={
+ tom:(R,x,y)=>C(x,y,3,'#E0402F')+C(x-.8,y-.8,1,'#F28A7C'),
+ cuc:(R,x,y)=>C(x,y,2.8,'#9CCB6B')+C(x,y,1.6,'#D8EDB5'),
+ feta:(R,x,y)=>RC(x,y,5,4.2,.8,'#FFFDF2',R()*90),
+ olive:(R,x,y)=>C(x,y,1.8,'#3B2A3F')+C(x,y,.6,'#8A6F8F'),
+ onion:(R,x,y)=>RING(x,y,2.8,'#C94B8A',.9),
+ chick:(R,x,y)=>RC(x,y,6,2.6,1.2,'#E4B777',R()*180),
+ crout:(R,x,y)=>RC(x,y,3.6,3.6,.6,'#D9A44C',R()*90),
+ egg:(R,x,y)=>C(x,y,3,'#FFFDF6')+C(x,y,1.5,'#FFB400'),
+ tuna:(R,x,y)=>RC(x,y,4.4,3.2,1.2,'#D9A98F',R()*90),
+ corn:(R,x,y)=>C(x,y,1.2,'#FFD43B'),
+ avo:(R,x,y)=>E(x,y,4.6,2.4,'#A6C957',R()*180)+E(x,y,3.2,1.2,'#D6E7A0',0),
+ beef:(R,x,y)=>RC(x,y,7,2.6,1.2,'#8B4A2B',R()*180),
+ pep:(R,x,y)=>RC(x,y,5.5,2,1,'#E8A52D',R()*180),
+ parm:(R,x,y)=>RC(x,y,2.6,1.2,.4,'#FFF1B8',R()*180)
+};
+const K={
+ egg(R,p){let s='';
+  if(p.sauce)s+=C(50,38,23,'#2B2B2B')+C(50,38,21,p.sauce);
+  if(p.y===0){s+=sc(R,10,15,(x,y)=>E(x,y,5+R()*3,3.5+R()*2,pick(R,['#FFD84D','#FFE27A','#F6C42E']),R()*180))}
+  else if(p.y<0){s+='<path d="M27 42 A23 19 0 0 1 73 42 Z" fill="#F4C84A"/><path d="M27 42 A23 19 0 0 1 73 42" fill="none" stroke="#E0A92A" stroke-width="1.2"/><path d="M50 23 L50 42" stroke="#E0A92A" stroke-width="1"/>'+sc(R,5,10,(x,y)=>RC(x,Math.min(y,40),5,1.6,.8,'#FFE27A',R()*60))+HERB(R,4)}
+  else{const P=p.y===1?[[50,38]]:p.y===2?[[41,34],[59,43]]:[[39,31],[61,35],[48,49]];
+   P.forEach(([x,y])=>{s+=E(x,y,10,9,'#FFFDF6',R()*60)+C(x+1.5,y-1,8,'#FFFFFF')+C(x,y,4.4,'#FFB400')+C(x-1.3,y-1.3,1.3,'#FFE08A')})}
+  if(p.top==='tomato')s+=sc(R,6,16,(x,y)=>C(x,y,2.3,'#D93A2B'));
+  if(p.sauce)s+=sc(R,6,17,(x,y)=>C(x,y,1,'#3E8E41'))+sc(R,4,14,(x,y)=>RC(x,y,4,2,1,'#6BAF4B',R()*90));
+  return s},
+ pan(R,p){let s=C(53,41,20,'rgba(0,0,0,.14)')+C(50,38,20,p.c)+C(50,38,17.5,p.c2)+sc(R,12,16,(x,y)=>C(x,y,1.1+R(),'#B97A2E',.5));
+  if(p.t==='berry')s+=C(50,38,6,'#FFF8EC')+C(46,35,2.4,'#C8323C')+C(54,36,2.4,'#7B2D5B')+C(50,42,2.4,'#C8323C');
+  if(p.t==='sour')s+=C(50,38,6.5,'#FFFDF7')+C(48.5,36.5,2,'#fff');
+  if(p.t==='jam')s+=C(50,38,5.5,'#B3202F')+C(48.5,36.5,1.6,'#E0525E');
+  if(p.t==='sugar')s+=sc(R,18,16,(x,y)=>C(x,y,.9,'#FFFFFF',.9))+E(62,30,5,3,'#F7E27A',30);
+  return s},
+ toast(R,p){let s='';
+  if(p.t==='poach'){[[39,37],[62,40]].forEach(([x,y])=>{s+=RC(x,y,28,27,7,p.c)+RC(x,y,24,23,5,'#F1D9A8')+E(x,y,8,7,'#FFFDF6',R()*40)+C(x,y,3.6,'#FFB400')+C(x-1,y-1,1,'#FFE08A')})+HERB(R,5)}
+  else{s+=RC(50,38,42,34,9,p.c)+RC(50,38,38,30,6,'#F1D9A8');for(let i=0;i<5;i++)s+=E(36+i*5.5,38+Math.sin(i)*3,5.2,2.3,i%2?'#A6C957':'#8DB84A',70+i*8);s+=E(58,34,8,7,'#FFFDF6',20)+C(58,34,3.4,'#FFB400')+C(57,33,1,'#FFE08A')+sc(R,5,12,(x,y)=>C(x,y,.8,'#D93A2B'))}
+  return s},
+ sand(R,p){let s='';
+  s+='<path d="M27 54 L27 24 L57 54 Z" fill="#E9C98E" stroke="#C99A55" stroke-width="1.2"/><path d="M71 22 L71 52 L41 22 Z" fill="#E9C98E" stroke="#C99A55" stroke-width="1.2"/>';
+  s+=LN(27,24,57,54,'#7FB069',2.6)+LN(29,22.5,59,52.5,'#E0402F',2.2)+LN(26,26,56,56,'#F3E5C4',2.4);
+  s+=LN(71,52,41,22,'#7FB069',2.6)+LN(69,53.5,39,23.5,'#E0402F',2.2)+LN(73,50.5,43,20.5,'#F3E5C4',2.4);
+  return s},
+ waffle(R,p){let s=RC(52,40,38,38,6,'rgba(0,0,0,.13)')+RC(50,38,38,38,6,'#D79A3E')+RC(50,38,34,34,4,'#E5AE55');
+  [-9,0,9].forEach(u=>{s+=LN(50+u,22,50+u,54,'#B87722',1.3)+LN(34,38+u,66,38+u,'#B87722',1.3)});
+  return s+RC(50,38,10,6.5,1.6,'#FFE98A',-10)+E(56,40,9,5,'#A8561B',-20).replace('/>',' opacity=".35"/>')},
+ chicken(R){let s=sc(R,8,17,(x,y)=>E(x,y,5.6,3.6,pick(R,['#E9B84E','#D9A23A']),R()*180));
+  [[40,34,-25],[59,43,20]].forEach(([x,y,r])=>{s+=E(x+1,y+2,11,7,'rgba(0,0,0,.18)',r)+E(x,y,11,7,'#B8641F',r)+E(x-1,y-1.6,8,4.2,'#DA8C3A',r)+C(x+(r<0?-11:11),y+(r<0?4:-3),1.9,'#F4EBDD')});
+  return s+HERB(R,8)+C(64,26,3.4,'#FFE066')+C(64,26,2.4,'#FFF0A0')},
+ pasta(R,p){let s='';for(let i=0;i<6;i++)s+=`<circle cx="${f1(50+(R()-.5)*3)}" cy="${f1(38+(R()-.5)*3)}" r="${3+i*3}" fill="none" stroke="${p.pc}" stroke-width="2.3" stroke-dasharray="${f1(6+R()*8)} ${f1(1+R()*2)}"/>`;
+  s+=C(50,38,6,p.sauce)+sc(R,p.n||6,13,(x,y)=>C(x,y,1.4+R()*1.2,p.bit));
+  if(p.extra==='chicken')s+=sc(R,5,12,(x,y)=>RC(x,y,5.5,3.2,1,'#E4B777',R()*180));
+  if(p.extra==='veg')s+=sc(R,9,14,(x,y)=>C(x,y,1.8,pick(R,['#E2552F','#4C9A41','#F0A030'])));
+  return s+HERB(R,4)},
+ rice(R,p){let s=C(50,38,20,p.rice)+C(50,38,20,'rgba(0,0,0,.05)')+sc(R,55,19,(x,y)=>E(x,y,1.6,.7,p.grain,R()*180));
+  if(p.add==='plov')s+=sc(R,16,15,(x,y)=>LN(x,y,x+3,y+2.5,'#F08A24',1.6))+sc(R,6,13,(x,y)=>RC(x,y,4.6,3.6,1,'#7A3B1E',R()*90))+C(63,29,4.6,'#FBF4E4')+LN(63,25,63,33,'#E0D3B8',.7)+LN(59.5,28,66.5,30,'#E0D3B8',.7);
+  else s+=sc(R,5,12,(x,y)=>RC(x,y,6.4,4.2,1.8,'#C98A3E',R()*120))+sc(R,8,16,(x,y)=>C(x,y,1,'#3E8E41'))+sc(R,6,13,(x,y)=>C(x,y,1.6,'#F08A24'));
+  return s},
+ stew(R,p){let s=C(50,38,21,p.sauce)+C(50,38,21,'rgba(0,0,0,.06)')+sc(R,p.m||7,15,(x,y)=>RC(x,y,6.5,5,1.8,p.meat,R()*90));
+  if(p.pot)s+=sc(R,6,15,(x,y)=>RC(x,y,5.2,5.2,1,'#F0D78A',R()*90));
+  if(p.car)s+=sc(R,5,15,(x,y)=>C(x,y,2,'#F08A24'));
+  if(p.mush)s+=sc(R,6,15,(x,y)=>E(x,y,3.3,2.3,'#D9C2A0',R()*180));
+  return s+HERB(R,8)},
+ dump(R,p){let s='';[[38,32],[57,30],[65,45],[46,47],[31,46],[50,38]].slice(0,p.n).forEach(([x,y])=>{const r=R()*180;s+=E(x,y+1.5,8,5.2,'rgba(0,0,0,.12)',r)+E(x,y,8,5.2,p.dough,r)+E(x,y-1.6,5.4,1.5,'rgba(0,0,0,.07)',r)});
+  if(p.top==='sour')s+=C(50,38,3.8,'#FFFDF7');if(p.top==='butter')s+=RC(50,38,5.4,3.4,1,'#FFE27A',-10);
+  return s+HERB(R,7)},
+ patties(R){let s='';[[39,33],[59,36],[48,51]].forEach(([x,y])=>{s+=C(x+1,y+1.6,9.5,'rgba(0,0,0,.15)')+C(x,y,9.5,'#A5521F')+C(x-1,y-1,7.2,'#C27635')+sc(R,4,6,(x2,y2)=>C(x+x2-50,y+y2-38,.8,'#7A3B1E'))});
+  return s+C(68,25,4.6,'#D93A2B')+C(68,25,3,'#EE6A55')+LN(30,56,38,52,'#3E8E41',1.4)+LN(32,52,38,56,'#3E8E41',1.4)},
+ fish(R){let s=E(49,40,19,9.5,'rgba(0,0,0,.14)',-12)+E(48,38,19,9.5,'#E9CFA3',-12)+E(48,37,15,6,'#F4E1BC',-12);
+  for(let i=-2;i<=2;i++)s+=LN(46+i*6,31+i*1.2+3,48+i*6,40+i*1.2,'#C99A5A',1.1);
+  return s+C(67,49,6.6,'#FFD84A')+C(67,49,5.2,'#FFEB8A')+LN(67,44,67,54,'#FFD84A',.8)+LN(62,49,72,49,'#FFD84A',.8)+HERB(R,9)+C(32,48,2.6,'#F0D78A')+C(36,52,2.6,'#F0D78A')},
+ pepper(R){let s='';[[37,37,'#D8402F'],[63,40,'#E8A52D']].forEach(([x,y,c])=>{s+=C(x+1,y+1.6,13,'rgba(0,0,0,.13)')+C(x,y,13,c)+C(x,y,10.4,'#F8E7C4')+sca(R,x,y,12,8,(a,b)=>E(a,b,1.5,.8,'#FFFFFF',R()*180))+sca(R,x,y,4,7,(a,b)=>RC(a,b,3.6,2.8,.8,'#A5521F',R()*90))+sca(R,x,y,3,8,(a,b)=>C(a,b,1.2,'#D93A2B'))});
+  return s+HERB(R,5)},
+ potato(R){return sc(R,11,17,(x,y)=>E(x+.8,y+1,6,3.8,'rgba(0,0,0,.12)',0))+sc(R,11,17,(x,y)=>E(x,y,6,3.8,pick(R,['#E9B84E','#D9A23A','#F0C968']),R()*180))+sc(R,10,17,(x,y)=>C(x,y,.9,'#7A4A1B'))+HERB(R,9)+C(64,30,3.6,'#FBF4E4')},
+ steak(R){let s=RC(51,40,38,25,11,'rgba(0,0,0,.15)')+RC(50,38,38,25,11,'#7B3A1D')+RC(50,38,34,21,9,'#955026');
+  for(let k=-2;k<=2;k++)s+=LN(43+k*7,29,36+k*7,47,'#4D230F',1.5);
+  return s+RC(55,34,8.5,5.4,1.5,'#FFE98A',-8)+LN(30,54,68,54,'#4F8A3A',1.3)+sc(R,6,3,(x,y)=>C(x+16,y+16,.9,'#4F8A3A'))},
+ salad(R,p){let s=sc(R,16,18,(x,y)=>E(x,y,5.5,3,pick(R,p.g||['#5FA84A','#7CBF5B','#3E8E41']),R()*180));p.it.forEach(k=>{s+=sc(R,6,16,(x,y)=>SI[k](R,x,y))});return s},
+ mound(R,p){let s=C(50,38,20,'rgba(0,0,0,.08)')+C(50,38,19.5,p.base)+sc(R,48,18,(x,y)=>RC(x,y,2.8,2.8,.4,pick(R,p.cols),R()*90));
+  if(p.peas)s+=sc(R,14,17,(x,y)=>C(x,y,1.3,'#6BAF4B'));return s+HERB(R,3)},
+ slaw(R){return C(50,38,20,'#E4EFC4')+sc(R,46,18,(x,y)=>LN(x,y,x+R()*6-3,y+R()*6-3,pick(R,['#CDE3A0','#F0F6D8','#F08A24','#B9D68A']),1.3))+HERB(R,4)},
+ caprese(R){let s='';for(let i=0;i<8;i++){const a=i/8*6.2832,x=50+Math.cos(a)*15,y=38+Math.sin(a)*15;s+=(i%2)?C(x,y,6.3,'#FFFDF4')+C(x,y,6.3,'rgba(0,0,0,.05)'):C(x,y,6.3,'#D93A2B')+C(x,y,3.8,'#EE6A55')}
+  return s+sc(R,4,6,(x,y)=>E(x,y,4,2.2,'#3E8E41',R()*180))+C(50,38,1.4,'#2F7A35')},
+ bean(R){return C(50,38,21,'#EFE3C8')+sc(R,40,17,(x,y)=>E(x,y,2.8,1.8,pick(R,['#8B3A2B','#A04A36']),R()*180))+sc(R,4,12,(x,y)=>RING(x,y,3,'#C94B8A',.9))+sc(R,5,14,(x,y)=>C(x,y,1.8,'#D93A2B'))+HERB(R,5)},
+ wedge(R,p){const D='M50 56 L31 22 Q50 12 69 22 Z';let s=`<path d="${D}" fill="rgba(0,0,0,.14)" transform="translate(2 2)"/><path d="${D}" fill="${p.crust}"/><path d="M50 52 L34 23 Q50 15.5 66 23 Z" fill="${p.c}"/>`;
+  if(p.layers)[29,35,41,47].forEach(y=>{const h=19*(56-y)/34-2;s+=LN(50-h,y,50+h,y,p.line,1.2)});
+  if(p.t==='berry')s+=C(44,28,2.6,'#C8323C')+C(52,26.5,2.6,'#7B2D5B')+C(57,31,2.6,'#C8323C')+C(49,33,2.2,'#7B2D5B');
+  if(p.t==='cream')s+=E(50,25,10,2.6,'#FFFDF7',0)+C(50,23,1.4,'#F3C26B');
+  return s},
+ brownie(R){let s='';[[40,42,-8],[58,38,6],[48,26,-3]].forEach(([x,y,r])=>{s+=RC(x+1,y+1.5,19,19,2.4,'rgba(0,0,0,.15)',r)+RC(x,y,19,19,2.4,'#3E2113',r)+RC(x,y,15.5,15.5,1.8,'#5B3320',r)});
+  return s+sc(R,18,16,(x,y)=>C(x,y,.8,'#FFFFFF',.8))+C(56,36,2.6,'#C8323C')},
+ pie(R,p){let s=C(51,40,22,'rgba(0,0,0,.14)')+C(50,38,22,'#C98A3A')+RING(50,38,21.2,'#B87722',1.8).replace('fill="none"','fill="none" stroke-dasharray="3 2"')+C(50,38,19,p.fill)+(p.lat?lat(18,'#B5701F',1.9,6)+sc(R,10,14,(x,y)=>C(x,y,.9,'#7A4A1B',.6)):C(50,38,3,'#F6D9A0')+sc(R,5,10,(x,y)=>C(x,y,.8,'#8B4A2B')));return s},
+ dome(R){return C(52,41,15,'rgba(0,0,0,.12)')+C(50,38,15,'#FFFDF6')+C(46,34,6,'rgba(255,255,255,.9)')+E(50,38,10,7.5,'#B3202F',0).replace('/>',' opacity=".9"/>')+C(46,35,2.6,'#C8323C')+C(54,38,2.6,'#7B2D5B')+C(49,42,2.6,'#C8323C')+E(58,28,4,2,'#3E8E41',30)+sc(R,6,24,(x,y)=>C(x,y,1.2,'#B3202F',.8))},
+ cookies(R){let s='';[[39,37],[60,35],[51,53]].forEach(([x,y])=>{s+=C(x+1,y+1.6,10,'rgba(0,0,0,.15)')+C(x,y,10,'#C48E50')+C(x,y,8.4,'#D9A868')+sca(R,x,y,6,6,(a,b)=>C(a,b,1.2,'#4A2A1C'))+sca(R,x,y,8,7,(a,b)=>E(a,b,1.3,.7,'#F1D9A8',R()*180))});return s},
+ loaf(R){let s='';[[34,40,-12],[50,38,-4],[66,40,8]].forEach(([x,y,r])=>{s+=RC(x+1,y+1.5,17,25,3,'rgba(0,0,0,.14)',r)+RC(x,y,17,25,3,'#9C5E2A',r)+RC(x,y,14,22,2.2,'#E6C48A',r)+sca(R,x,y,3,5,(a,b)=>C(a,b,.8,'#8B4A2B'))});
+  return s+C(50,56,3.4,'#F7E08A')+C(57,56,3.4,'#F7E08A')},
+ muffin(R){let s='';[[38,34],[60,36],[49,52]].forEach(([x,y])=>{s+=C(x+1,y+1.6,10.5,'rgba(0,0,0,.15)')+C(x,y,10.5,'#F2E8D8')+C(x,y,8.6,'#8A4B22')+C(x-1.5,y-1.5,5.6,'#A35E2C')+sca(R,x,y,4,6,(a,b)=>C(a,b,1.1,'#3E2113'))});return s},
+ scoops(R){return C(41,41,10,'rgba(0,0,0,.14)')+C(41,40,10,'#F6E2C0')+C(59,39,10,'#E87C8F')+C(49,28,10,'#7B4B2A')+C(46,25,3,'rgba(255,255,255,.35)')+C(56,35,3,'rgba(255,255,255,.35)')+C(37,37,3,'rgba(255,255,255,.4)')+sc(R,14,20,(x,y)=>C(x,y,.9,pick(R,['#E0402F','#FFD43B','#4C9A41','#fff'])))},
+ ramekin(R,p){let s=C(51,40,21,'rgba(0,0,0,.14)')+C(50,38,21,'#FFFFFF')+C(50,38,17.4,'#EDEDED')+C(50,38,15.6,p.surf);
+  if(p.crack)s+=LN(42,32,50,38,'#8A5A1A',1)+LN(50,38,59,34,'#8A5A1A',1)+LN(50,38,54,47,'#8A5A1A',1)+C(44,44,3.4,'rgba(255,255,255,.3)')+C(56,52,0,'#000');
+  if(p.cream)s+=C(50,38,5.6,'#FFF8EC')+C(48.6,36.6,2,'#fff')+sc(R,9,13,(x,y)=>RC(x,y,2.4,1.2,.4,'#7A4A30',R()*180))+C(58,31,2.5,'#C8323C');
+  return s},
+ apples(R){let s='';[[39,36],[61,41]].forEach(([x,y])=>{s+=C(x+1,y+1.6,11.5,'rgba(0,0,0,.14)')+C(x,y,11.5,'#C8323C')+C(x,y,9.2,'#F6E9C8')+C(x,y,2.1,'#6B3A1B')});
+  return s+'<path d="M30 34 Q36 44 42 38 T54 44 T68 40" fill="none" stroke="#E8A52D" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>'+sc(R,6,15,(x,y)=>E(x,y,2.2,1.6,'#C9A06A',R()*180))+RC(50,54,24,2.6,1.2,'#8B4A2B',-8)},
+ bowl(R,p){let s=C(52,41,26,'rgba(0,0,0,.12)')+C(50,38,25,'#FFFFFF')+C(50,38,23.4,'rgba(0,0,0,.07)')+C(50,38,21.6,p.surf)+C(50,38,21.6,'rgba(0,0,0,.05)');
+  switch(p.t){
+   case'cream':s+=C(50,38,6.2,'#FFF8EC')+C(48.6,36.6,2.6,'#fff')+HERB(R,5);break;
+   case'banana':s+=sca(R,50,38,7,0,()=>'');for(let i=0;i<7;i++){const a=i/7*6.2832;s+=C(50+Math.cos(a)*10,38+Math.sin(a)*10,3.8,'#F7E08A')+C(50+Math.cos(a)*10,38+Math.sin(a)*10,1.2,'#D9B94A')}s+=C(50,38,3,'#C98A3A');break;
+   case'berries':s+=sc(R,9,13,(x,y)=>C(x,y,2.6,pick(R,['#C8323C','#7B2D5B','#D93A5B'])))+sc(R,14,14,(x,y)=>C(x,y,1,'#D9B070'));break;
+   case'noodle':s+=sc(R,12,15,(x,y)=>LN(x,y,x+R()*8-4,y+R()*5-2.5,'#F6E6B0',1.5))+sc(R,5,14,(x,y)=>C(x,y,1.8,'#F08A24'))+HERB(R,6);break;
+   case'chunks':s+=sc(R,8,15,(x,y)=>RC(x,y,5.4,4.4,1.4,'#7A4425',R()*90))+sc(R,5,14,(x,y)=>RC(x,y,4.6,4.6,1,'#F0D78A',R()*90))+sc(R,4,14,(x,y)=>C(x,y,1.9,'#F08A24'))+HERB(R,6);break;
+   case'herb':s+=C(50,38,5.4,'#FFF8EC')+HERB(R,10);break;
+   case'jam':s+=C(50,38,5.4,'#B3202F')+C(48.5,36.5,1.6,'#E0525E')+RC(60,30,5,3,1,'#FFE27A',-20);break;
+   case'seeds':s+=sc(R,14,15,(x,y)=>E(x,y,1.5,.8,'#7A8F3A',R()*180))+RC(50,38,6,4,1.2,'#FFE27A',-12)+sc(R,5,14,(x,y)=>RC(x,y,3.6,3.6,.8,'#F6B55A',R()*90));break;
+   case'cinn':s+=sc(R,18,14,(x,y)=>C(x,y,.8,'#8B4A2B'))+C(50,38,2.2,'#C8323C');break;
+  }
+  return s}
+};
+const VIS={
+1:['egg',{y:0,top:'tomato'}],2:['pan',{c:'#D9A24A',c2:'#EDC475',t:'berry'}],3:['bowl',{surf:'#E4D1AE',t:'banana'}],4:['pan',{c:'#E4B65E',c2:'#F3D78C',t:'sugar'}],5:['toast',{c:'#C9985A',t:'avo'}],6:['egg',{y:-1}],7:['bowl',{surf:'#F3E8D2',t:'jam'}],8:['sand',{}],9:['bowl',{surf:'#FFFDF8',t:'berries'}],10:['egg',{y:3,sauce:'#C3382A'}],11:['pan',{c:'#B87A33',c2:'#D29A4C',t:'sour'}],12:['waffle',{}],13:['bowl',{surf:'#F0B04F',t:'seeds'}],14:['pan',{c:'#D9A24A',c2:'#F0CB7D',t:'jam'}],15:['toast',{c:'#C9985A',t:'poach'}],
+16:['chicken',{}],17:['pasta',{pc:'#F4DC8E',sauce:'#F5E9B8',bit:'#4A3426',n:9}],18:['rice',{rice:'#E8BE55',grain:'#F6DE92',add:'plov'}],19:['stew',{sauce:'#C79A6E',meat:'#7A4425',mush:1,m:8}],20:['bowl',{surf:'#A5232E',t:'cream'}],21:['bowl',{surf:'#F0C25A',t:'noodle'}],22:['dump',{dough:'#F4E4C4',n:5,top:'sour'}],23:['pasta',{pc:'#F1D180',sauce:'#B5382A',bit:'#7A1F18',n:10}],24:['pasta',{pc:'#EFD493',sauce:'#C4573A',bit:'#E2552F',extra:'veg'}],25:['stew',{sauce:'#A3693A',meat:'#6B3419',pot:1,car:1,m:6}],26:['bowl',{surf:'#D98A3A',t:'chunks'}],27:['patties',{}],28:['fish',{}],29:['pepper',{}],30:['potato',{}],31:['bowl',{surf:'#C8822E',t:'herb'}],32:['pasta',{pc:'#F4E2B0',sauce:'#F6EAD0',bit:'#D9B87A',extra:'chicken'}],33:['rice',{rice:'#F6EEDB',grain:'#FFFFFF',add:'chicken'}],34:['steak',{}],35:['dump',{dough:'#F8EFD8',n:6,top:'butter'}],
+36:['salad',{it:['tom','cuc','feta','olive','onion']}],37:['salad',{it:['chick','crout','parm','egg'],g:['#8FC060','#A9D17A','#6FAE4F']}],38:['mound',{base:'#F4E4D2',cols:['#F6B99A','#FFD68A','#E6EFCD','#FFFFFF'],peas:1}],39:['salad',{it:['tom','cuc','onion'],g:['#8FC060']}],40:['mound',{base:'#7A1F3D',cols:['#A0264D','#E58B2A','#6B1830','#F2D16B','#5C9A3E']}],41:['salad',{it:['tuna','egg','cuc','corn']}],42:['slaw',{}],43:['salad',{it:['avo','tom','cuc']}],44:['mound',{base:'#EAD7AF',cols:['#D8B070','#F3EAD0','#C9A064','#FFFDF6']}],45:['salad',{it:['tom','onion','tom'],g:['#5FA84A']}],46:['mound',{base:'#7A1F3D',cols:['#9B2A52','#C14B6F','#E9D3B0','#8C6A3E']}],47:['bean',{}],48:['caprese',{}],49:['mound',{base:'#F8F0DA',cols:['#FFD43B','#FFFFFF','#F3E3B0','#E8F0C6']}],50:['salad',{it:['beef','pep','cuc','onion'],g:['#6FAE4F','#8FC060']}],
+51:['wedge',{crust:'#C9954A',c:'#F6E7C2',t:'berry'}],52:['brownie',{}],53:['pie',{lat:1,fill:'#E3A15A'}],54:['dome',{}],55:['bowl',{surf:'#FFFDF8',t:'berries'}],56:['cookies',{}],57:['loaf',{}],58:['wedge',{crust:'#B87A2E',c:'#E6BE78',layers:1,line:'#C58A3A',t:'cream'}],59:['muffin',{}],60:['pie',{fill:'#E8892A'}],61:['scoops',{}],62:['ramekin',{surf:'#D49A3A',crack:1}],63:['ramekin',{surf:'#4A2A1C',cream:1}],64:['apples',{}],65:['bowl',{surf:'#F5EAD0',t:'cinn'}]};
+function dish(r){
+ if(IMG[r.id])return `<img src="${IMG[r.id]}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`;
+ const R=rng(r.id*97+13),v=VIS[r.id]||['bowl',{surf:'#EEE',t:'cream'}];
+ return `<svg viewBox="0 0 100 75" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><ellipse cx="53" cy="44" rx="31" ry="29" fill="rgba(0,0,0,.13)"/><circle cx="50" cy="38" r="30" fill="#F8F4ED"/><circle cx="50" cy="38" r="24.5" fill="none" stroke="rgba(0,0,0,.08)" stroke-width=".8"/>${K[v[0]](R,v[1])}</svg>`;
+}
+// ---- VIEWS ----
+const tile=(r,c)=>`<div class="tile ${c||''}" style="--h:${r.h}">${dish(r)}</div>`;
+const fmtP=n=>{const w=Math.floor(n),h=n-w;return h?(w?w+'½':'½'):String(w)};
+const catName=id=>CATS.find(c=>c.id===id).n[st.l];
+function card(r){
+ return `<button class="rc" data-act="open" data-id="${r.id}"><div class="tile" style="--h:${r.h}">${dish(r)}<span class="rate">${ic('star')}${r.rate}</span></div><div class="rc-b"><h3>${esc(rname(r))}</h3><div class="meta"><span>${r.min} ${t('min')}</span><i class="dot"></i><span><b>${r.kcal}</b> ${t('kcal')}</span></div></div></button>`;
+}
+function chatCard(){
+ const on=CL.sample&&!CL.denied;
+ return `<div class="chatcard"><div class="jes-h"><div class="jes-av">${ic('spark')}</div><div><b>Jesika</b><span>${on?t('j_ai'):t('j_simple')}</span></div></div>
+ <div class="chatlog" id="chatlog" aria-live="polite"></div><div class="chips" id="chatsug"></div>
+ <form class="ask" id="askf" autocomplete="off"><input id="askin" placeholder="${esc(t('ask_ph'))}" enterkeyhint="send" aria-label="${esc(t('ask_ph'))}"><button class="btn sq" type="submit" id="askbtn" aria-label="${esc(t('send'))}">${ic('send')}</button></form></div>`;
+}
+function paintChat(){
+ const log=$('#chatlog');if(!log)return;
+ let h='';
+ if(!st.chat.length)h+=`<div class="bubble">${esc(t('j_hello'))}</div>`;
+ st.chat.forEach(m=>{
+  if(m.r==='u'){h+=`<div class="msg u">${esc(m.x)}</div>`;return}
+  const ids=m.live?[]:(m.ids||[]);
+  h+=`<div class="bubble aitxt">${m.x?esc(m.x):'<span class="typing"><i></i><i></i><i></i></span>'}${m.note?`<p class="note">${esc(m.note)}</p>`:''}${ids.length?`<div class="chips">${ids.map(i=>`<button class="chip s" data-act="open" data-id="${i}">${esc(rname(byId(i)))}</button>`).join('')}</div>`:''}</div>`;
+ });
+ log.innerHTML=h;log.scrollTop=log.scrollHeight;
+ const sg=$('#chatsug');if(sg)sg.innerHTML=st.chat.length?'':['sug1','sug2','sug3','sug4'].map(k=>`<button class="chip" data-act="sug" data-k="${k}">${esc(t(k))}</button>`).join('');
+ const b=$('#askbtn');if(b){b.innerHTML=st.busy?ic('x'):ic('send');b.setAttribute('aria-label',st.busy?t('stop'):t('send'))}
+}
+function vHome(){
+ const stories=CATS.map(c=>{const r=byId(STORY[c.id]);return `<button class="story" data-act="cat" data-id="${c.id}" aria-pressed="${st.cat===c.id}"><i class="ring"><span class="tile" style="--h:${r.h}">${dish(r)}</span></i><b>${esc(c.n[st.l])}</b></button>`}).join('');
+ const list=REC.filter(r=>(st.cat==='all'||r.cat===st.cat)&&okR(r));
+ return `<div class="sec"><section class="land"><div class="land-l"><p class="eyebrow">${esc(t('h_eye'))}</p><h1 class="h1">${esc(t('h_t'))}</h1><p class="sub">${esc(t('h_s'))}</p>
+ <div class="chips"><button class="btn" data-act="tab" data-t="fridge">${ic('fridge')}${esc(t('n_fridge'))}</button><button class="btn ghost" data-act="tab" data-t="diary">${ic('book')}${esc(t('n_diary'))}</button></div></div>${chatCard()}</section>
+ <div class="stories" role="group">${stories}</div>
+ <div class="head"><div><h2 class="title">${esc(catName(st.cat))}</h2><span class="count">${list.length}${filtersOn()?' · '+esc(t('f_on')):''}</span></div><button class="btn ghost sm" data-act="filt">${ic('filter')}${esc(t('f_btn'))}${filtersOn()?'<i class="pip"></i>':''}</button></div>
+ ${list.length?`<div class="grid">${list.map(card).join('')}</div>`:`<div class="empty">${esc(t('s_none'))}<div style="margin-top:14px"><button class="btn ghost sm" data-act="freset">${esc(t('f_reset'))}</button></div></div>`}</div>`;
+}
+function vFridge(){
+ const keys=Object.keys(ING);const rk=rank().slice(0,12);
+ const prods=keys.map(k=>{const n=st.fridge[k]||0;return `<div class="prod${n?' on':''}"><button class="pt" data-act="fr" data-k="${k}" aria-pressed="${n>0}"><span class="chk">${n?ic('check'):''}</span>${esc(iname(k))}</button>${n?`<div class="qty"><button data-act="frm" data-k="${k}" aria-label="−">−</button><span>x${n}</span><button data-act="frp" data-k="${k}" aria-label="+">+</button></div>`:''}</div>`}).join('');
+ const res=rk.map(x=>{const r=x.r,tot=r.ing.length;return `<div class="mc"><button class="mo" data-act="open" data-id="${r.id}">${tile(r)}</button><div class="mb"><b>${esc(rname(r))}</b><div class="bar"><i style="width:${Math.round(x.score*100)}%"></i></div><span class="miss">${tot-x.miss.length}/${tot}${x.miss.length?' · '+esc(t('fr_miss'))+': '+esc(x.miss.map(iname).join(', ')):' · '+esc(t('fr_full'))}</span></div>${x.miss.length?`<button class="x" data-act="fradd" data-id="${r.id}" aria-label="${esc(t('fr_add'))}" title="${esc(t('fr_add'))}">${ic('cart')}</button>`:''}</div>`}).join('');
+ return `<div class="sec"><div class="head"><div><h1 class="title">${esc(t('fr_t'))}</h1><p class="sub">${esc(t('fr_s'))}</p></div>${fridgeKeys().length?`<button class="btn ghost sm" data-act="frclear">${esc(t('fr_clear'))}</button>`:''}</div>
+ <div class="pgrid">${prods}</div>
+ <div class="head"><h2 class="title">${esc(t('fr_res'))}</h2><button class="btn ghost sm" data-act="frask">${ic('spark')}${esc(t('fr_ask'))}</button></div>
+ ${res?`<div class="mlist">${res}</div>`:`<div class="empty">${esc(t('fr_none'))}</div>`}</div>`;
+}
+function resHtml(){
+ const q=st.q.trim();const list=q?searchR(q):REC.filter(okR).slice().sort((a,b)=>b.rate-a.rate).slice(0,12);
+ if(!list.length)return `<div class="empty">${esc(t('s_none'))}</div>`;
+ return `<div class="grid">${list.map(card).join('')}</div>`;
+}
+function vSearch(){
+ return `<div class="sec"><h1 class="title">${esc(t('s_t'))}</h1><label class="sbox">${ic('search')}<input id="q" type="search" value="${esc(st.q)}" placeholder="${esc(t('s_ph'))}" autocomplete="off" enterkeyhint="search"></label>
+ <p class="sub" style="margin:0">${esc(t('s_hint'))}${filtersOn()?' · '+esc(t('f_on')):''}</p><div id="res">${resHtml()}</div></div>`;
+}
+function vDiary(){
+ const days=weekDays(st.sel),td=today(),T=dayTot(st.sel),log=dayLog(st.sel);
+ const left=st.goal-T.k;const tg={p:st.goal*.2/4,f:st.goal*.3/9,c:st.goal*.5/4};
+ const mac=(n,v,g)=>`<div class="mac"><div class="mac-h"><span>${esc(n)}</span><span>${v} / ${Math.round(g)} ${t('g')}</span></div><div class="bar"><i style="width:${Math.min(100,Math.round(v/g*100))}%"></i></div></div>`;
+ const dh=days.map((d,i)=>`<button class="day${d===td?' today':''}" data-act="day" data-d="${d}" aria-pressed="${d===st.sel}"><span>${WD[st.l][i]}</span><small>${fromISO(d).getDate()}</small><i class="dd${dayLog(d).length?' on':''}"></i></button>`).join('');
+ const meals=log.map(e=>{const r=byId(e.id);return `<div class="meal"><button class="mt tile" style="--h:${r.h}" data-act="open" data-id="${r.id}" aria-label="${esc(rname(r))}">${dish(r)}</button><div class="tx"><b>${esc(rname(r))}</b><span>${fmtP(e.n)} × ${r.kcal} = ${Math.round(r.kcal*e.n)} ${t('kcal')}</span></div><div class="qty sm"><button data-act="dm" data-id="${r.id}" aria-label="−">−</button><span>${fmtP(e.n)}</span><button data-act="dp" data-id="${r.id}" aria-label="+">+</button></div></div>`}).join('');
+ return `<div class="sec"><h1 class="title">${esc(t('d_t'))}</h1>
+ <div class="wk"><button class="rbtn sm" data-act="wk" data-n="-7" aria-label="‹">${ic('back')}</button><b>${dlabel(days[0])} — ${dlabel(days[6])}</b><button class="rbtn sm" data-act="wk" data-n="7" aria-label="›">${ic('next')}</button></div>
+ <div class="days">${dh}</div>
+ <div class="panel"><div class="big"><b>${T.k}</b><span class="count">${t('kcal')} · ${esc(t('d_goal'))} ${st.goal}</span></div><div class="count" style="margin-top:-8px">${left>=0?esc(t('d_left'))+': '+left:esc(t('d_over'))+': '+(-left)} ${t('kcal')}${st.sel===td?'':' · '+dlabel(st.sel)}</div>
+ <div class="bar" style="height:12px"><i style="width:${Math.min(100,Math.round(T.k/st.goal*100))}%"></i></div>
+ ${mac(t('prot'),T.p,tg.p)}${mac(t('fat'),T.f,tg.f)}${mac(t('carb'),T.c,tg.c)}</div>
+ <div class="panel">${meals||`<p class="sub" style="margin:0">${esc(t('d_empty'))}</p>`}<button class="btn block" data-act="dadd">${ic('plus')}${esc(t('d_add'))}</button></div></div>`;
+}
+function syncCard(){
+ return `<div class="row"><div><b>${ic('cloud')} ${esc(t('p_sync'))}</b><p class="note" id="syncTxt" style="margin:6px 0 0">${esc(syncText())}</p></div></div>
+ <div class="row"><div><b>${ic('spark')} ${esc(t('p_ai'))}</b><p class="note" style="margin:6px 0 0">${esc(CL.denied?t('ai_den'):CL.sample?t('ai_on'):t('ai_off'))}</p></div></div>`;
+}
+function vProfile(){
+ const favs=Object.keys(st.fav).map(Number).map(byId).filter(Boolean);
+ const lang=['RU','UZ','EN'].map((n,i)=>`<button data-act="lang" data-i="${i}" aria-pressed="${st.l===i}">${n}</button>`).join('');
+ const th=SKINS.map(k=>`<button data-act="skin" data-k="${k}" aria-pressed="${st.skin===k}">${esc(t('th_'+k))}</button>`).join('');
+ return `<div class="sec"><h1 class="title">${esc(t('p_t'))}</h1>
+ <div class="stat"><div><b>${favs.length}</b><span>${esc(t('p_fav'))}</span></div><div><b>${Object.keys(st.logs).length}</b><span>${esc(t('p_logged'))}</span></div><div><b>${shopCount()}</b><span>${esc(t('p_cart'))}</span></div></div>
+ <div class="panel"><div class="row"><b>${esc(t('p_lang'))}</b><div class="seg">${lang}</div></div><div class="row"><b>${esc(t('p_theme'))}</b><div class="seg">${th}</div></div>
+ <div class="row"><b>${esc(t('p_goal'))}</b><div class="qty sm"><button data-act="goal" data-n="-100" aria-label="−">−</button><span style="min-width:72px">${st.goal}</span><button data-act="goal" data-n="100" aria-label="+">+</button></div></div>${syncCard()}</div>
+ ${favs.length?`<div class="head"><h2 class="title">${esc(t('p_fav'))}</h2></div><div class="grid">${favs.map(card).join('')}</div>`:''}
+ <p class="note">${esc(t('p_note'))}</p></div>`;
+}
+const VIEWS={home:vHome,fridge:vFridge,search:vSearch,diary:vDiary,me:vProfile};
+const NAV=[['home','home','n_home'],['fridge','fridge','n_fridge'],['search','search','n_search'],['diary','book','n_diary'],['me','user','n_me']];
+
+// ---- recipe sheet ----
+function ytUrl(r){return 'https://www.youtube.com/results?search_query='+encodeURIComponent(rname(r)+' '+['рецепт','retsept','recipe'][st.l])}
+function tmChip(r,i,m){
+ const key='r'+r.id+':'+i,x=st.timers.find(y=>y.key===key);
+ if(x)return `<button class="tchip run${x.done?' done':''}" data-act="tm" data-i="${i}" data-m="${m}">${ic('timer')}<span data-tk="${key}">${x.done?esc(t('c_tdone')):tmFmt(x.end-Date.now())}</span>${ic('x')}</button>`;
+ return `<button class="tchip" data-act="tm" data-i="${i}" data-m="${m}">${ic('timer')}${m>=60?fmtN(Math.round(m/6)/10)+' '+['ч','soat','h'][st.l]:m+' '+t('min')}</button>`;
+}
+function vVideo(r){
+ const id=VID[r.id];if(!id)return '';
+ const yt='https://www.youtube.com/watch?v='+id;
+ if(st.vblocked){
+  return `<h2>${esc(t('r_video'))}</h2><a class="vposter" href="${yt}" target="_blank" rel="noopener noreferrer" aria-label="${esc(t('r_vopen'))}"><span class="tile" style="--h:${r.h}">${dish(r)}</span><i class="pb">${ic('play','f')}</i><b class="vcap">${esc(t('r_vopen'))}</b></a><p class="note vnote">${esc(t('r_vwhy'))}</p>`;
+ }
+ const body=st.vplay===r.id
+  ?`<div class="vwrap"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1&autoplay=1" title="${esc(rname(r))}" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+  :`<button class="vposter" data-act="vplay" aria-label="${esc(t('r_vplay'))}"><span class="tile" style="--h:${r.h}">${dish(r)}</span><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()"><i class="pb">${ic('play','f')}</i></button>`;
+ return `<h2>${esc(t('r_video'))}</h2>${body}<p class="note vnote">${esc(t('r_vlang'))} · <a href="${yt}" target="_blank" rel="noopener noreferrer">${esc(t('r_vfail'))}</a></p>`;
+}
+function sheetBar(r){
+ return `<div class="sheet-bar"><button class="rbtn" data-act="closeR" aria-label="${esc(t('back'))}">${ic('back')}</button><div class="rb2"><button class="rbtn cb" data-act="shop" aria-label="${esc(t('sh_t'))}">${ic('cart')}${shopCount()?`<em>${shopCount()}</em>`:''}</button><button class="rbtn${st.fav[r.id]?' y on':''}" data-act="fav" data-id="${r.id}" aria-pressed="${!!st.fav[r.id]}" aria-label="${esc(t('r_fav'))}">${ic('bookmark')}</button></div></div>
+ <div class="tile hero" style="--h:${r.h}">${dish(r)}</div>`;
+}
+function sheetHead(r){
+ const sv=curSv(r);
+ const tags=Object.keys(r.tags).map(k=>`<span class="chip s">${esc(t('a_'+k))}</span>`).join('');
+ return `<div class="tr"><h1>${esc(rname(r))}</h1><span class="rate">${ic('star')}${r.rate}</span></div>
+ <div class="facts"><div class="fact"><b>${r.min}</b><span>${t('min')}</span></div><div class="fact"><b>${r.kcal}</b><span>${t('kcal')}</span></div><div class="fact"><b>${sv}</b><span>${t('serv')}</span></div><div class="fact"><b>${r.rate}</b><span>${esc(t('r_rate'))}</span></div></div>
+ ${tags?`<div class="chips">${tags}</div>`:''}
+ <button class="btn block" data-act="cook">${ic('play','f')}${esc(t('r_cook'))}</button>`;
+}
+function sheetRest(r){
+ const sv=curSv(r),f=factor(r),steps=stepsFor(r),ph=!!st.photos[r.id];
+ return `<div class="photo"><label class="btn ghost sm" for="pf">${ic('camera')}${esc(t(ph?'r_photo2':'r_photo'))}</label>${ph?`<button class="btn ghost sm" data-act="pdel">${ic('trash')}${esc(t('r_photodel'))}</button>`:''}<input id="pf" type="file" accept="image/*" hidden></div>
+ <div class="head"><h2>${esc(t('r_servings'))}</h2><div class="qty sm"><button data-act="svm" aria-label="−">−</button><span>${sv}</span><button data-act="svp" aria-label="+">+</button></div></div>
+ <div class="dmac"><div><b>${r.P} ${t('g')}</b><span>${esc(t('prot'))}</span></div><div><b>${r.F} ${t('g')}</b><span>${esc(t('fat'))}</span></div><div><b>${r.C} ${t('g')}</b><span>${esc(t('carb'))}</span></div></div>
+ <p class="note" style="margin:-10px 0 0">${esc(t('per'))}</p>
+ <h2>${esc(t('r_ing'))}</h2><div class="ingbox">${r.ing.map(([k,a])=>`<div class="ii"><i></i><span><b>${esc(fmtQty(k,a*f))}</b>${esc(iname(k))}</span></div>`).join('')}</div>
+ <div class="two"><button class="btn ghost" data-act="shopall">${ic('cart')}${esc(t('r_shop'))}</button>${fridgeKeys().length?`<button class="btn ghost" data-act="shopmiss">${esc(t('r_shopmiss'))}</button>`:''}</div>
+ <h2>${esc(t('r_steps'))}</h2><ol class="steps">${steps.map((s,i)=>`<li><div class="sx"><p>${esc(s.t)}</p>${s.m?tmChip(r,i,s.m):''}</div></li>`).join('')}</ol>
+ <button class="btn block" data-act="rlog">${ic('book')}${esc(t('r_diary'))}</button>`;
+}
+// The sheet is painted in parts so the embedded video keeps playing when other parts re-render.
+function paintSheet(){
+ const sh=$('#sheet');
+ if(!st.open){if(!sh.hidden){sh.hidden=true;sh.innerHTML='';sh.dataset.rid='';sh.dataset.vk=''}return}
+ const r=byId(st.open),was=sh.hidden,sc=sh.scrollTop;
+ if(sh.dataset.rid!==String(r.id)){sh.innerHTML='<div class="dwrap"><div id="s1" class="dc"></div><div class="body"><div id="s2" class="dc"></div><div id="s3" class="dc"></div><div id="s4" class="dc"></div></div></div>';sh.dataset.rid=r.id;sh.dataset.vk=''}
+ $('#s1').innerHTML=sheetBar(r);$('#s2').innerHTML=sheetHead(r);$('#s4').innerHTML=sheetRest(r);
+ const vk=(st.vplay===r.id?'p':'i')+st.l+(st.vblocked?'b':'');
+ if(sh.dataset.vk!==vk){$('#s3').innerHTML=vVideo(r);sh.dataset.vk=vk}
+ sh.hidden=false;if(!was)sh.scrollTop=sc;
+}
+
+// ---- cooking mode ----
+function vCook(){
+ const r=byId(st.cook.id),steps=stepsFor(r),i=st.cook.i,n=steps.length,f=factor(r);
+ if(i>=n){return `<div class="cwrap"><div class="cbar"><button class="rbtn" data-act="cclose" aria-label="${esc(t('close'))}">${ic('x')}</button><div class="ctitle"><b>${esc(rname(r))}</b></div></div><div class="cdone"><div class="tile" style="--h:${r.h}">${dish(r)}</div><h1>${esc(t('c_end_t'))}</h1><p class="sub">${esc(t('c_end_s'))}</p><button class="btn block" data-act="clog">${ic('book')}${esc(t('r_diary'))}</button><button class="btn ghost block" data-act="cclose">${esc(t('close'))}</button></div></div>`}
+ const s=steps[i],key='r'+r.id+':'+i,x=st.timers.find(y=>y.key===key);
+ const tm=s.m?(x?`<div class="ctm${x.done?' done':''}"><span data-tk="${key}">${x.done?esc(t('c_tdone')):tmFmt(x.end-Date.now())}</span><button class="btn ghost" data-act="tm" data-i="${i}" data-m="${s.m}">${esc(t('c_stop'))}</button></div>`:`<div class="ctm"><button class="btn" data-act="tm" data-i="${i}" data-m="${s.m}">${ic('timer')}${esc(t('c_start'))} · ${s.m} ${t('min')}</button></div>`):'';
+ const ing=st.ing?`<div class="ingbox cing">${r.ing.map(([k,a])=>`<div class="ii"><i></i><span><b>${esc(fmtQty(k,a*f))}</b>${esc(iname(k))}</span></div>`).join('')}</div>`:'';
+ return `<div class="cwrap"><div class="cbar"><button class="rbtn" data-act="cclose" aria-label="${esc(t('close'))}">${ic('x')}</button><div class="ctitle"><b>${esc(rname(r))}</b><span>${t('c_step')} ${i+1} ${t('c_of')} ${n}</span></div></div>
+ <div class="cprog"><i style="width:${Math.round((i+1)/n*100)}%"></i></div>
+ <div class="cbody"><p class="cstep">${esc(s.t)}</p>${tm}<button class="btn ghost sm" data-act="cing" aria-expanded="${!!st.ing}">${esc(t('c_ing'))}</button>${ing}<p class="note" id="wl"></p></div>
+ <div class="cnav"><button class="btn ghost" data-act="cprev"${i?'':' disabled'}>${ic('back')}${esc(t('c_prev'))}</button><button class="btn" data-act="cnext">${esc(i===n-1?t('c_finish'):t('c_next'))}${i===n-1?ic('check'):ic('next')}</button></div></div>`;
+}
+function paintWake(){const e=$('#wl');if(e)e.textContent=st.wl==='on'?t('c_awake'):st.wl==='na'?t('c_noawake'):''}
+
+// ---- shopping sheet ----
+function vShop(){
+ const rows=st.shop.map((e,i)=>`<div class="meal"><button class="cb2${e.d?' on':''}" data-act="sd" data-i="${i}" aria-pressed="${!!e.d}" aria-label="${esc(shopLine(e))}">${e.d?ic('check'):''}</button><div class="tx"><b class="${e.d?'dn':''}">${esc(e.k?iname(e.k):e.x)}</b>${e.k?`<span>${esc(fmtQty(e.k,e.a))}</span>`:''}</div><button class="x" data-act="srm" data-i="${i}" aria-label="${esc(t('close'))}">${ic('x')}</button></div>`).join('');
+ const anyDone=st.shop.some(e=>e.d);
+ return `<div class="dwrap pad"><div class="sbar"><button class="rbtn" data-act="shopclose" aria-label="${esc(t('back'))}">${ic('back')}</button><h1 class="title">${esc(t('sh_t'))}</h1></div>
+ <form class="ask" id="shopf" autocomplete="off"><input id="shopin" placeholder="${esc(t('sh_ph'))}" aria-label="${esc(t('sh_ph'))}"><button class="btn sq" type="submit" aria-label="${esc(t('sh_add'))}">${ic('plus')}</button></form>
+ <div class="panel" style="margin-top:16px">${rows||`<p class="sub" style="margin:0">${esc(t('sh_empty'))}</p>`}</div>
+ ${st.shop.length?`<div class="stack"><button class="btn block" data-act="scopy">${ic('copy')}${esc(t('sh_copy'))}</button>${anyDone?`<button class="btn ghost block" data-act="sfridge">${ic('fridge')}${esc(t('sh_fridge'))}</button><button class="btn ghost block" data-act="sclearb">${esc(t('sh_clearb'))}</button>`:''}<button class="btn line block" data-act="sclear">${ic('trash')}${esc(t('sh_clear'))}</button></div>`:''}</div>`;
+}
+
+// ---- modals ----
+function pickRows(q){
+ const list=(q.trim()?searchR(q):REC.slice().sort((a,b)=>rname(a).localeCompare(rname(b)))).slice(0,30);
+ return list.map(r=>`<button class="meal pk" data-act="pickadd" data-id="${r.id}"><span class="mt tile" style="--h:${r.h}">${dish(r)}</span><span class="tx"><b>${esc(rname(r))}</b><span>${r.kcal} ${t('kcal')} · ${esc(t('per'))}</span></span>${ic('plus')}</button>`).join('')||`<p class="sub">${esc(t('s_none'))}</p>`;
+}
+function vModal(){
+ if(st.modal==='filt'){
+  const ch=(on,act,attrs,label)=>`<button class="chip" data-act="${act}" ${attrs} aria-pressed="${!!on}">${esc(label)}</button>`;
+  const T=[0,15,30,60].map(v=>ch(st.f.time===v,'ft',`data-v="${v}"`,v?'≤ '+v+' '+t('min'):t('f_any'))).join('');
+  const K=[0,300,450,600].map(v=>ch(st.f.kcal===v,'fk',`data-v="${v}"`,v?'≤ '+v+' '+t('kcal'):t('f_any'))).join('');
+  const X=['egg','dairy','gluten','nuts','fish'].map(k=>ch(st.f.ex[k],'fx',`data-k="${k}"`,t('a_'+k))).join('');
+  return `<div class="mbox"><div class="head"><h2>${esc(t('f_t'))}</h2><button class="x" data-act="mclose" aria-label="${esc(t('close'))}">${ic('x')}</button></div>
+  <h3 class="fh">${esc(t('f_time'))}</h3><div class="chips">${T}</div><h3 class="fh">${esc(t('f_kcal'))}</h3><div class="chips">${K}</div>
+  <h3 class="fh">${esc(t('f_diet'))}</h3><div class="chips">${ch(st.f.veg,'fv','',t('f_veg'))}</div><h3 class="fh">${esc(t('f_ex'))}</h3><div class="chips">${X}</div>
+  <div class="mfoot"><button class="btn ghost" data-act="freset">${esc(t('f_reset'))}</button><button class="btn" data-act="mclose">${esc(t('f_show'))} · ${REC.filter(okR).length}</button></div></div>`;
+ }
+ if(st.modal==='pick'){
+  return `<div class="mbox"><div class="head"><h2>${esc(t('d_pick'))}</h2><button class="x" data-act="mclose" aria-label="${esc(t('close'))}">${ic('x')}</button></div>
+  <label class="sbox">${ic('search')}<input id="pq" type="search" placeholder="${esc(t('s_ph'))}" autocomplete="off"></label><div class="plist" id="pres">${pickRows('')}</div></div>`;
+ }
+ return '';
+}
+
+// ---- timer bar ----
+let tsig='';
+function paintTimers(){
+ const sig=st.timers.map(x=>x.key+(x.done?'!':'')).join(',');
+ if(sig!==tsig){
+  tsig=sig;
+  $('#timerbar').innerHTML=st.timers.map(x=>`<div class="tp${x.done?' done':''}"><b>${esc(x.label)}</b><span data-tk="${x.key}">${x.done?esc(t('c_tdone')):tmFmt(x.end-Date.now())}</span><button data-act="tx" data-key="${x.key}" aria-label="${esc(t('close'))}">${ic('x')}</button></div>`).join('');
+  if(st.open||st.cook)renderOverlays();
+ }
+ st.timers.forEach(x=>{if(!x.done)document.querySelectorAll('[data-tk="'+x.key+'"]').forEach(e=>{e.textContent=tmFmt(x.end-Date.now())})});
+}
+
+// ---- render ----
+function paintOv(id,html){
+ const e=$('#'+id);
+ if(!html){if(!e.hidden){e.hidden=true;e.innerHTML=''}return}
+ const sc=e.scrollTop,was=e.hidden;e.innerHTML=html;e.hidden=false;if(!was)e.scrollTop=sc;
+}
+function renderOverlays(){
+ paintSheet();
+ paintOv('shop',st.shopOpen?vShop():'');
+ paintOv('cook',st.cook?vCook():'');
+ paintOv('modal',st.modal?vModal():'');
+ document.body.classList.toggle('cooking',!!st.cook);document.body.style.overflow=(st.open||st.shopOpen||st.cook||st.modal)?'hidden':'';
+ paintWake();
+}
+function render(){
+ document.documentElement.dataset.skin=st.skin;document.documentElement.lang=LI[st.l];
+ $('#langBtn').textContent=['RU','UZ','EN'][st.l];
+ $('#themeBtn').innerHTML=ic('sun');$('#cartBtn').innerHTML=ic('cart')+(shopCount()?`<em class="bdg">${shopCount()}</em>`:'');
+ $('#nav').innerHTML=NAV.map(([id,i,k])=>`<button data-act="tab" data-t="${id}"${st.tab===id?' aria-current="page"':''}>${ic(i)}<span>${esc(t(k))}</span></button>`).join('');
+ $('#view').innerHTML=VIEWS[st.tab]();
+ if(st.tab==='home')paintChat();
+ renderOverlays();tsig+='x';paintTimers();
+}
+let tt=0;
+function toast(m){const e=$('#toast');e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{e.hidden=true},2400)}
+
+// ---- actions ----
+function readPhoto(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{const M=720,k=Math.min(1,M/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};im.src=fr.result};fr.readAsDataURL(file)})}
+const A={
+ tab(d){st.tab=d.t;window.scrollTo(0,0);render()},
+ cat(d){st.cat=d.id;render()},
+ open(d){const r=byId(+d.id);if(!r)return;st.modal=null;st.shopOpen=0;st.open=r.id;st.sv=r.serv;st.vplay=0;render()},
+ vplay(){st.vplay=st.open;renderOverlays()},
+ closeR(){st.open=0;st.sv=0;st.vplay=0;render()},
+ fav(d){const id=+d.id;if(st.fav[id])delete st.fav[id];else st.fav[id]=1;save();render()},
+ svm(){const r=byId(st.open);st.sv=Math.max(1,curSv(r)-1);renderOverlays()},
+ svp(){const r=byId(st.open);st.sv=Math.min(24,curSv(r)+1);renderOverlays()},
+ shopall(){const r=byId(st.open);shopFromRecipe(r,false);toast(t('r_added'));render()},
+ shopmiss(){const r=byId(st.open),n=shopFromRecipe(r,true);toast(n?t('r_added'):t('r_nomiss'));render()},
+ rlog(){logAdd(today(),st.open,1);toast(t('d_added'));render()},
+ pdel(){const id=st.open;delete st.photos[id];delete IMG[id];savePhotos();rph.add(id);queueRemote();render()},
+ cook(){const r=byId(st.open);st.vplay=0;st.cook={id:r.id,i:0};st.ing=0;wake(true);renderOverlays()},
+ cclose(){st.cook=null;wake(false);renderOverlays()},
+ cprev(){if(st.cook.i>0){st.cook.i--;renderOverlays();$('#cook').scrollTop=0}},
+ cnext(){st.cook.i++;renderOverlays();$('#cook').scrollTop=0},
+ cing(){st.ing=st.ing?0:1;renderOverlays()},
+ clog(){logAdd(today(),st.cook.id,1);toast(t('d_added'));A.cclose();render()},
+ tm(d){const r=byId(st.cook?st.cook.id:st.open),key='r'+r.id+':'+d.i;if(st.timers.some(x=>x.key===key))tmStop(key);else tmStart(key,rname(r)+' · '+(+d.i+1),+d.m);renderOverlays()},
+ tx(d){tmStop(d.key);renderOverlays()},
+ shop(){st.shopOpen=1;renderOverlays()},
+ shopclose(){st.shopOpen=0;render()},
+ sd(d){const e=st.shop[+d.i];if(e){e.d=e.d?0:1;save();renderOverlays();$('#cartBtn').innerHTML=ic('cart')+(shopCount()?`<em class="bdg">${shopCount()}</em>`:'')}},
+ srm(d){st.shop.splice(+d.i,1);save();renderOverlays();render()},
+ async scopy(){const ok=await copyText(st.shop.filter(e=>!e.d).map(e=>'• '+shopLine(e)).join('\n'));if(ok)toast(t('sh_copied'))},
+ sfridge(){st.shop.filter(e=>e.d&&e.k).forEach(e=>{st.fridge[e.k]=Math.max(1,st.fridge[e.k]||0)});st.shop=st.shop.filter(e=>!e.d);save();toast(t('sh_moved'));render()},
+ sclearb(){st.shop=st.shop.filter(e=>!e.d);save();render()},
+ sclear(){st.shop=[];save();render()},
+ fr(d){if(st.fridge[d.k])delete st.fridge[d.k];else st.fridge[d.k]=1;save();render()},
+ frm(d){const n=(st.fridge[d.k]||1)-1;if(n<1)delete st.fridge[d.k];else st.fridge[d.k]=n;save();render()},
+ frp(d){st.fridge[d.k]=Math.min(9,(st.fridge[d.k]||0)+1);save();render()},
+ frclear(){st.fridge={};save();render()},
+ fradd(d){const r=byId(+d.id);st.sv=0;const n=shopFromRecipe(r,true);toast(n?t('r_added'):t('r_nomiss'));render()},
+ frask(){st.tab='home';window.scrollTo(0,0);render();ask(t('fr_q'))},
+ sug(d){ask(t(d.k))},
+ filt(){st.modal='filt';renderOverlays()},
+ mclose(){st.modal=null;render()},
+ ft(d){st.f.time=+d.v;save();renderOverlays();render()},
+ fk(d){st.f.kcal=+d.v;save();renderOverlays();render()},
+ fv(){st.f.veg=st.f.veg?0:1;save();renderOverlays();render()},
+ fx(d){if(st.f.ex[d.k])delete st.f.ex[d.k];else st.f.ex[d.k]=1;save();renderOverlays();render()},
+ freset(){st.f={time:0,kcal:0,veg:0,ex:{}};save();render()},
+ day(d){st.sel=d.d;render()},
+ wk(d){st.sel=addDays(st.sel,+d.n);render()},
+ dadd(){st.modal='pick';renderOverlays()},
+ pickadd(d){logAdd(st.sel,+d.id,1);st.modal=null;toast(t('d_added'));render()},
+ dm(d){const e=dayLog(st.sel).find(x=>x.id===+d.id);if(e)logSet(st.sel,e.id,e.n-.5);render()},
+ dp(d){const e=dayLog(st.sel).find(x=>x.id===+d.id);if(e)logSet(st.sel,e.id,Math.min(20,e.n+.5));render()},
+ lang(d){st.l=+d.i;save();render()},
+ skin(d){st.skin=d.k;save();render()},
+ goal(d){st.goal=Math.max(1200,Math.min(4000,st.goal+ +d.n));save();render()}
+};
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');
+ if(b&&A[b.dataset.act]){A[b.dataset.act](b.dataset,b);return}
+ if(e.target.id==='modal'){st.modal=null;render()}
+});
+document.addEventListener('submit',e=>{
+ e.preventDefault();
+ if(e.target.id==='askf'){const i=$('#askin');if(st.busy){st.ac&&st.ac.abort();return}const v=i.value;i.value='';ask(v)}
+ if(e.target.id==='shopf'){const i=$('#shopin'),v=i.value.trim();if(v){st.shop.push({x:v.slice(0,80),d:0});save();renderOverlays();render();const n=$('#shopin');n&&n.focus()}}
+});
+document.addEventListener('input',e=>{
+ if(e.target.id==='q'){st.q=e.target.value;$('#res').innerHTML=resHtml()}
+ if(e.target.id==='pq'){$('#pres').innerHTML=pickRows(e.target.value)}
+});
+document.addEventListener('change',async e=>{
+ if(e.target.id==='pf'&&e.target.files&&e.target.files[0]){
+  const id=st.open;
+  try{const d=await readPhoto(e.target.files[0]);st.photos[id]=d;IMG[id]=d;if(!savePhotos())toast(t('r_photo_err'));else toast(t('r_photo_ok'));rph.add(id);queueRemote();render()}
+  catch(x){toast(t('r_photo_err'))}
+ }
+});
+document.addEventListener('keydown',e=>{
+ if(e.key!=='Escape')return;
+ if(st.modal){st.modal=null;render()}else if(st.cook)A.cclose();else if(st.shopOpen){st.shopOpen=0;render()}else if(st.open){st.open=0;st.sv=0;st.vplay=0;render()}
+});
+$('#langBtn').addEventListener('click',()=>{st.l=(st.l+1)%3;save();render()});
+$('#themeBtn').addEventListener('click',()=>{st.skin=SKINS[(SKINS.indexOf(st.skin)+1)%3];save();render()});
+$('#cartBtn').addEventListener('click',()=>A.shop());
+// Inside Claude the page frame blocks YouTube iframes, so show a link instead. Elsewhere the player is embedded.
+st.vblocked=!!window.claude;
+document.addEventListener('securitypolicyviolation',e=>{if(/frame/.test(e.effectiveDirective||e.violatedDirective||'')&&!st.vblocked){st.vblocked=1;st.vplay=0;renderOverlays()}});
+loadLocal();render();initCaps();
+</script>
